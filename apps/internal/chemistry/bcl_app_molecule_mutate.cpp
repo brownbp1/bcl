@@ -13,22 +13,24 @@
 // (c)
 
 // initialize the static initialization fiasco finder, if macro ENABLE_FIASCO_FINDER is defined
-#include "command/bcl_command_parameter_check_ranged.h"
 #include "util/bcl_util_static_initialization_fiasco_finder.h"
 BCL_StaticInitializationFiascoFinder
 
 // include header of this class
-#include "app/bcl_app_apps.h"
+#include "internal/chemistry/bcl_app_molecule_mutate.h"
+
+// include bcl headers
 #include "chemistry/bcl_chemistry_fragment_feed.h"
 #include "chemistry/bcl_chemistry_fragment_mutate_interface.h"
 #include "command/bcl_command_app_default_flags.h"
 #include "command/bcl_command_flag_dynamic.h"
 #include "command/bcl_command_flag_static.h"
+#include "command/bcl_command_parameter_check_ranged.h"
 #include "command/bcl_command_parameter_check_serializable.h"
-#include "internal/chemistry/bcl_app_molecule_mutate.h"
 #include "io/bcl_io_file.h"
 #include "math/bcl_math_mutate_interface.h"
 #include "storage/bcl_storage_template_instantiations.h"
+
 namespace bcl
 {
   namespace app
