@@ -434,15 +434,15 @@ namespace bcl
             io::File::MustOpenOFStream( m_OutputStream, OUTPUT_FILENAME);
 
             // set up sequential mutate to perform 1 to N mutates in a row prior to scoring (does not bypass druglikeness filtering)
-            util::ShPtr< math::MutateInterface< chemistry::FragmentComplete> > mutate_repeater
-            (
-              new math::MutateRepeat< chemistry::FragmentComplete>
-              (
-                MUTATES,
-                1,
-                MAX_SEQUENTIAL_MUTATES
-              )
-            );
+//            util::ShPtr< math::MutateInterface< chemistry::FragmentComplete> > mutate_repeater
+//            (
+//              new math::MutateRepeat< chemistry::FragmentComplete>
+//              (
+//                MUTATES,
+//                1,
+//                MAX_SEQUENTIAL_MUTATES
+//              )
+//            );
 
             // Set up workers
             std::vector< Worker> workers( m_Threads);
@@ -456,7 +456,8 @@ namespace bcl
               worker_ref.m_ThreadManager                = this;
               worker_ref.m_StartFragment                = START_FRAGMENT.HardCopy();
               worker_ref.m_StartFragment->GetCacheMap() = util::ShPtr< descriptor::CacheMap>( new descriptor::CacheMap);
-              worker_ref.m_Mutate                       = mutate_repeater;
+//              worker_ref.m_Mutate                       = mutate_repeater;
+              worker_ref.m_Mutate                       = MUTATES;
               worker_ref.m_PropertyScorer               = PROPERTY_SCORER.HardCopy();
               worker_ref.m_Score                        = Score( new chemistry::ScoreFunctionGeneric( worker_ref.m_PropertyScorer) );
               worker_ref.m_FinalMetrics                 = FINAL_METRICS;
@@ -466,7 +467,7 @@ namespace bcl
               worker_ref.m_NumberMCSkipped              = NUMBER_SKIPPED_ITERATIONS;
               worker_ref.m_MetropolisTemperature        = METROPOLIS_TEMPERATURE;
               worker_ref.m_SaveAllAcceptedImproved      = SAVE_ALL_ACCEPTED_IMPROVED;
-              worker_ref.m_BondDruglikeness             = descriptor::CheminfoProperty( "MoleculeTotalDruglikeBondEnergy");
+              worker_ref.m_BondDruglikeness             = descriptor::CheminfoProperty( "MoleculeTotalBondEnergy");
             }
 
             // Allocate space for jobs
@@ -685,7 +686,7 @@ namespace bcl
         io::File::MustOpenIFStream( input, m_StartFragmentFlag->GetFirstParameter()->GetValue());
         util::ShPtr< chemistry::FragmentComplete> sp_startfragment
         (
-          new chemistry::FragmentComplete( sdf::FragmentFactory::MakeFragment( input, sdf::e_Maintain))
+          new chemistry::FragmentComplete( sdf::FragmentFactory::MakeFragment( input))
         );
         io::File::CloseClearFStream( input);
 
@@ -704,7 +705,7 @@ namespace bcl
         {
           mutate_probs = storage::Vector< float>( mutate_input.GetSize(), 1.0);
         }
-        Mutates mutates;
+        Mutates mutates( new math::MutateDecisionNode< chemistry::FragmentComplete>() );
         for
         (
             size_t mutate_i( 0), mutate_sz( mutate_input.GetSize());
