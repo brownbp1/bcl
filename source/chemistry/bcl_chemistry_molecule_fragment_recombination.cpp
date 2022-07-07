@@ -13,20 +13,6 @@
 // (c)
 
 // initialize the static initialization fiasco finder, if macro ENABLE_FIASCO_FINDER is defined
-#include "chemistry/bcl_chemistry_configuration_set.h"
-#include "chemistry/bcl_chemistry_conformation_comparison_psi_field.h"
-#include "chemistry/bcl_chemistry_conformation_graph_converter.h"
-#include "chemistry/bcl_chemistry_constitution_set.h"
-#include "chemistry/bcl_chemistry_fragment_configuration_shared.h"
-#include "chemistry/bcl_chemistry_fragment_constitution_shared.h"
-#include "chemistry/bcl_chemistry_fragment_graph_marker.h"
-#include "chemistry/bcl_chemistry_fragment_split_interface.h"
-#include "chemistry/bcl_chemistry_fragment_split_largest_component.h"
-#include "chemistry/bcl_chemistry_fragment_split_rings.h"
-#include "graph/bcl_graph_connectivity.h"
-#include "graph/bcl_graph_subgraph.h"
-#include "io/bcl_io_directory_entry.h"
-#include "io/bcl_io_ofstream.h"
 #include "util/bcl_util_static_initialization_fiasco_finder.h"
 BCL_StaticInitializationFiascoFinder
 
@@ -34,11 +20,25 @@ BCL_StaticInitializationFiascoFinder
 #include "chemistry/bcl_chemistry_atom_conformational_interface.h"
 #include "chemistry/bcl_chemistry_atoms_complete_standardizer.h"
 #include "chemistry/bcl_chemistry_bond_isometry_handler.h"
+#include "chemistry/bcl_chemistry_configuration_set.h"
+#include "chemistry/bcl_chemistry_conformation_comparison_psi_field.h"
+#include "chemistry/bcl_chemistry_conformation_graph_converter.h"
+#include "chemistry/bcl_chemistry_constitution_set.h"
+#include "chemistry/bcl_chemistry_fragment_configuration_shared.h"
+#include "chemistry/bcl_chemistry_fragment_constitution_shared.h"
+#include "chemistry/bcl_chemistry_fragment_graph_marker.h"
 #include "chemistry/bcl_chemistry_fragment_map_conformer.h"
+#include "chemistry/bcl_chemistry_fragment_split_interface.h"
+#include "chemistry/bcl_chemistry_fragment_split_largest_component.h"
+#include "chemistry/bcl_chemistry_fragment_split_rings.h"
 #include "chemistry/bcl_chemistry_hydrogens_handler.h"
 #include "chemistry/bcl_chemistry_molecule_fragment_recombination.h"
 #include "chemistry/bcl_chemistry_stereocenters_handler.h"
 #include "graph/bcl_graph_subgraph_isomorphism.h"
+#include "graph/bcl_graph_connectivity.h"
+#include "graph/bcl_graph_subgraph.h"
+#include "io/bcl_io_directory_entry.h"
+#include "io/bcl_io_ofstream.h"
 #include "io/bcl_io_file.h"
 #include "math/bcl_math_running_average.h"
 #include "sched/bcl_sched_scheduler_interface.h"
@@ -644,8 +644,8 @@ namespace bcl
         }
 
         // clean the new molecule
-        FragmentMapConformer cleaner( "None", false, storage::Vector< size_t>( conf_moveable_indices.Begin(), conf_moveable_indices.End()));
-        util::ShPtr< FragmentComplete> new_mol( cleaner.Clean( new_mol_vec, BASE_MOL_A, "None", false));
+        FragmentMapConformer cleaner( descriptor::CheminfoProperty("Constant(1.0)"), false, storage::Vector< size_t>( conf_moveable_indices.Begin(), conf_moveable_indices.End()));
+        util::ShPtr< FragmentComplete> new_mol( cleaner.Clean( new_mol_vec, BASE_MOL_A, descriptor::CheminfoProperty("Constant(1.0)"), false));
         if( new_mol.IsDefined())
         {
           return *new_mol;

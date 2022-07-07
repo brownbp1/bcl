@@ -1024,7 +1024,7 @@ namespace bcl
         std::string mobile_atoms_str;
         FragmentMapConformer cleaner
         (
-          "",                                 // druglikeness type
+          descriptor::CheminfoProperty("Constant(1.0)"), // druglikeness type
           "",                                 // receptor MDL property
           "",                                 // receptor filename
           descriptor::CheminfoProperty(),     // affinity net

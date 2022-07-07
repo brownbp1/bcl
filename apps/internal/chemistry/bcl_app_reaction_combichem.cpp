@@ -641,7 +641,7 @@ namespace bcl
               chemistry::HydrogensHandler::Remove( atoms);
               chemistry::FragmentMapConformer cleaner
               (
-                m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
+                descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()),
                 m_CorinaFlag->GetFlag()
               );
               util::ShPtr< chemistry::FragmentComplete> clean_mol
@@ -650,7 +650,7 @@ namespace bcl
                 (
                   atoms,
                   *ens_itr,
-                  m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
+                  descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()),
                   false
                 )
               );
@@ -775,7 +775,7 @@ namespace bcl
          (
            new_frag_v,
            REFERENCE,
-           m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()
+           descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue())
          ));
        return clean_frag;
      }
@@ -811,7 +811,7 @@ namespace bcl
        );
        static chemistry::FragmentMapConformer conf_mapper
        (
-         m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
+         descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()),
          m_MDLString,
          m_PocketFilename,
          SCORER,
