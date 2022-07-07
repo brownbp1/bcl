@@ -821,12 +821,12 @@ namespace bcl
     private:
 
       // instantiate enumerator for PrepareSmallMoleculeEnsemble class
-      static const ApplicationType FocusedLibraryDesign_Instance;
+//      static const ApplicationType FocusedLibraryDesign_Instance;
 
-    }; // FocusedLibraryDesign
+//    }; // FocusedLibraryDesign
 
     //! @brief standard constructor
-    FocusedLibraryDesign::FocusedLibraryDesign() :
+    FocusedLibraryDesign() :
       m_StartFragmentFlag
       (
         new command::FlagStatic
@@ -1015,10 +1015,14 @@ namespace bcl
     {
     }
 
-    const ApplicationType FocusedLibraryDesign::FocusedLibraryDesign_Instance
+    public:
+    const ApplicationType FocusedLibraryDesign_Instance
     (
       GetAppGroups().AddAppToGroup( new FocusedLibraryDesign(), GetAppGroups().e_ChemInfo)
     );
+
+
+    }; // FocusedLibraryDesign
 
   } // namespace app
 } // namespace bcl
