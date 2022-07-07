@@ -47,10 +47,12 @@ namespace bcl
     FragmentSplitByIndex::FragmentSplitByIndex
     (
       const storage::Vector< size_t> &ATOM_INDICES,
+      const bool REMOVE_BONDED_H,
       const bool INVERT,
       const bool BREAK
     ) :
       m_AtomIndices( ATOM_INDICES),
+      m_RemoveBondedH( REMOVE_BONDED_H),
       m_Invert( INVERT),
       m_Break( BREAK)
     {
@@ -94,6 +96,52 @@ namespace bcl
       return 0;
     }
 
+    //! @return the indices of all hydrogen atoms bonded to target atoms
+    storage::Vector< size_t> FragmentSplitByIndex::GetBondedHydrogenAtoms
+    (
+      const storage::Vector< size_t> &ATOM_INDICES,
+      const AtomVector< AtomComplete> &MOLECULE_ATOMS
+    )
+    {
+      // initialize output
+      storage::Vector< size_t> h_atoms;
+
+      // find each target atom's bonded hydrogens
+      for
+      (
+          auto atom_itr( ATOM_INDICES.Begin()), atom_itr_end( ATOM_INDICES.End());
+          atom_itr != atom_itr_end;
+          ++atom_itr
+      )
+      {
+        // skip if selected atom is a hydrogen;
+        // yes, this does prevent someone from specifying removal of a hydrogen atoms
+        // and its bonded hydrogen if the entire fragment is H2; probably not the desired use-case
+        if( MOLECULE_ATOMS( *atom_itr).GetElementType() == GetElementTypes().e_Hydrogen)
+        {
+          continue;
+        }
+
+        // if heavy atom, go over bonds
+        for
+        (
+            auto bond_itr( MOLECULE_ATOMS( *atom_itr).GetBonds().Begin()),
+            bond_itr_end( MOLECULE_ATOMS( *atom_itr).GetBonds().End());
+            bond_itr != bond_itr_end;
+            ++bond_itr
+        )
+        {
+          if( bond_itr->GetTargetAtom().GetElementType() == GetElementTypes().e_Hydrogen)
+          {
+            h_atoms.PushBack( MOLECULE_ATOMS.GetAtomIndex( bond_itr->GetTargetAtom()));
+          }
+        }
+      }
+
+      // return hydrogen atom indices
+      return h_atoms;
+    }
+
   /////////////////
   //  operations //
   /////////////////
@@ -113,10 +161,31 @@ namespace bcl
       storage::Vector< size_t> keep_indices;
       if( m_Invert)
       {
-        keep_indices = m_AtomIndices;
+        // we need to add the bonded hydrogens after assigning the atom indices
+        if( m_RemoveBondedH)
+        {
+          auto h_atoms( GetBondedHydrogenAtoms( m_AtomIndices, atoms));
+          storage::Set< size_t> keep_indices_set( m_AtomIndices.Begin(), m_AtomIndices.End());
+          keep_indices_set.InsertElements( h_atoms.Begin(), h_atoms.End());
+          keep_indices = storage::Vector< size_t>( keep_indices_set.Begin(), keep_indices_set.End());
+        }
+        else
+        {
+          keep_indices = m_AtomIndices;
+        }
       }
       else
       {
+        // if we are not inverting but want to remove bonded H, then we must do it to
+        // the m_Atomindices vector before we identify keep indices
+        if( m_RemoveBondedH)
+        {
+          auto h_atoms( GetBondedHydrogenAtoms( m_AtomIndices, atoms));
+          storage::Set< size_t> keep_indices_set( m_AtomIndices.Begin(), m_AtomIndices.End());
+          keep_indices_set.InsertElements( h_atoms.Begin(), h_atoms.End());
+          m_AtomIndices = storage::Vector< size_t>( keep_indices_set.Begin(), keep_indices_set.End());
+        }
+
         // each atom in original conformation
         for( size_t i( 0); i < CONFORMATION.GetSize(); ++i)
         {
@@ -183,6 +252,13 @@ namespace bcl
         "the 0-indexed atom indices to remove from the input molecules",
         io::Serialization::GetAgent( &m_AtomIndicesString),
         ""
+      );
+      parameters.AddInitializer
+      (
+        "include_bonded_h",
+        "in addition to removing the specified 'atom_indices', also remove their bonded hydrogen atoms",
+        io::Serialization::GetAgent( &m_RemoveBondedH),
+        "true"
       );
       parameters.AddInitializer
       (

@@ -56,6 +56,9 @@ namespace bcl
       std::string m_AtomIndicesString;
       storage::Vector< size_t> m_AtomIndices;
 
+      //! remove bonded hydrogen atoms to target atoms
+      bool m_RemoveBondedH;
+
       //! invert the atom index selection prior to removal
       bool m_Invert;
 
@@ -78,6 +81,7 @@ namespace bcl
       FragmentSplitByIndex
       (
         const storage::Vector< size_t> &ATOM_INDICES = storage::Vector< size_t>(),
+        const bool REMOVE_BONDED_H = true,
         const bool INVERT = false,
         const bool BREAK = false
       );
@@ -101,9 +105,20 @@ namespace bcl
       //! @return the minimum size of fragments
       const size_t GetMinSize() const;
 
+    private:
+
+      //! @return the indices of all hydrogen atoms bonded to target atoms
+      storage::Vector< size_t> GetBondedHydrogenAtoms
+      (
+        const storage::Vector< size_t> &ATOM_INDICES,
+        const AtomVector< AtomComplete> &MOLECULE_ATOMS
+      );
+
     ////////////////
     // operations //
     ////////////////
+
+    public:
 
       //! @brief returns an ensemble of fragments of a molecule
       //! @param CONFORMATION molecule of interest
