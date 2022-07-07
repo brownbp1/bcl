@@ -112,7 +112,7 @@ namespace bcl
       (
         const storage::Vector< size_t> &ATOM_INDICES,
         const AtomVector< AtomComplete> &MOLECULE_ATOMS
-      );
+      ) const;
 
     ////////////////
     // operations //
