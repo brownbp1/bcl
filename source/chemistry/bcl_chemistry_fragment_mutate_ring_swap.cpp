@@ -78,7 +78,7 @@ namespace bcl
     FragmentMutateRingSwap::FragmentMutateRingSwap
     (
       const util::ShPtr< SearchFragmentLibraryFromTree> &FRAGMENT_LIBRARY,
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const FragmentComplete &SCAFFOLD_FRAGMENT,
       const FragmentEnsemble &MUTABLE_FRAGMENTS,
       const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,
@@ -122,7 +122,7 @@ namespace bcl
     FragmentMutateRingSwap::FragmentMutateRingSwap
     (
       const util::ShPtr< SearchFragmentLibraryFromTree> &FRAGMENT_LIBRARY,
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const FragmentComplete &SCAFFOLD_FRAGMENT,
       const FragmentEnsemble &MUTABLE_FRAGMENTS,
       const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,

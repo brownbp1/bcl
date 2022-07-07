@@ -105,7 +105,7 @@ namespace bcl
       //! @param DRUG_LIKENESS_TYPE type of druglikeness filter to apply during clean
       FragmentMutateFluorinate
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const bool &CORINA_CONFS
       );
 
@@ -116,7 +116,7 @@ namespace bcl
       //! @param MUTABLE_ATOM_INDICES indices of atoms that can be mutated
       FragmentMutateFluorinate
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const FragmentComplete &SCAFFOLD_FRAGMENT,
         const FragmentEnsemble &MUTABLE_FRAGMENTS,
         const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,
@@ -134,7 +134,7 @@ namespace bcl
       //! @param BFACTORS vector of values indicating per-residue flexibility (higher values are more flexible)
       FragmentMutateFluorinate
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const FragmentComplete &SCAFFOLD_FRAGMENT,
         const FragmentEnsemble &MUTABLE_FRAGMENTS,
         const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,
@@ -155,7 +155,7 @@ namespace bcl
       //! @param BFACTORS vector of values indicating per-residue flexibility (higher values are more flexible)
       FragmentMutateFluorinate
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const FragmentComplete &SCAFFOLD_FRAGMENT,
         const FragmentEnsemble &MUTABLE_FRAGMENTS,
         const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,

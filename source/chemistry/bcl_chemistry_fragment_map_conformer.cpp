@@ -79,7 +79,7 @@ namespace bcl
 
     //! @brief default constructor
     FragmentMapConformer::FragmentMapConformer() :
-      m_DrugLikenessType( "IsConstitutionDruglike"),
+      m_DrugLikenessType( descriptor::CheminfoProperty( "IsConstitutionDruglike")),
       m_ResolveClashes( false),
       m_VDWClashCutoff( 5.0),
       m_Corina( false),
@@ -95,11 +95,11 @@ namespace bcl
     //! @param DRUG_LIKENESS_TYPE type of druglikeness filter to apply during clean
     FragmentMapConformer::FragmentMapConformer
     (
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const bool CORINA_CONFS,
       const storage::Vector< size_t> &MOVEABLE_INDICES
     ) :
-      m_DrugLikenessType( "IsConstitutionDruglike"),
+      m_DrugLikenessType( descriptor::CheminfoProperty( "IsConstitutionDruglike")),
       m_ResolveClashes( false),
       m_VDWClashCutoff( 5.0),
       m_Corina( CORINA_CONFS),
@@ -120,7 +120,7 @@ namespace bcl
     //! @param BFACTORS vector of values indicating per-residue flexibility (higher values are more flexible)
     FragmentMapConformer::FragmentMapConformer
     (
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const std::string &MDL,
       const std::string &BINDING_POCKET_FILENAME,
       const descriptor::CheminfoProperty &PROPERTY_SCORER,
@@ -200,7 +200,7 @@ namespace bcl
     (
       const AtomVector< AtomComplete> &ATOM_VEC,
       const FragmentComplete &REFERENCE_MOL,
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const bool &SKIP_NEUT
     ) const
     {
@@ -466,7 +466,7 @@ namespace bcl
     AtomVector< AtomComplete> FragmentMapConformer::CleanAtoms
     (
       const AtomVector< AtomComplete> &ATOM_VEC,
-      const std::string &DRUG_LIKENESS_TYPE,
+      const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
       const bool &SKIP_NEUT,
       const bool &SKIP_SATURATE_H
     ) const
@@ -514,11 +514,12 @@ namespace bcl
       }
 
       // check drug-likeness
-      if( DRUG_LIKENESS_TYPE.size() && DRUG_LIKENESS_TYPE != "None")
+      if( DRUG_LIKENESS_TYPE.GetAlias() != "Constant(1.0)")
       {
         GetMutex().Lock();
-        static descriptor::CheminfoProperty drug_likeness_filter( DRUG_LIKENESS_TYPE);
-        bool druglike( drug_likeness_filter->SumOverObject( new_mol)( 0));
+//        static descriptor::CheminfoProperty drug_likeness_filter( DRUG_LIKENESS_TYPE);
+//        bool druglike( drug_likeness_filter->SumOverObject( new_mol)( 0));
+        bool druglike( DRUG_LIKENESS_TYPE->SumOverObject( new_mol)( 0));
         GetMutex().Unlock();
         if( druglike)
         {
@@ -804,7 +805,7 @@ namespace bcl
     {
       // generate 3D conformer
       FragmentComplete mol( MOL);
-      util::ShPtr< FragmentComplete> clean_mol( Clean( MOL.GetAtomVector(), MOL, "None", true));
+      util::ShPtr< FragmentComplete> clean_mol( Clean( MOL.GetAtomVector(), MOL, descriptor::CheminfoProperty( "Constant(1.0)"), true));
       if( !util::IsDefined( clean_mol))
       {
         return FragmentComplete();

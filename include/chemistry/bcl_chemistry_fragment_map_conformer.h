@@ -68,7 +68,7 @@ namespace bcl
     //////////
 
       //! type of drug likeness filter to apply during molecule cleaning
-      std::string m_DrugLikenessType;
+      descriptor::CheminfoProperty m_DrugLikenessType;
 
       //! MDL property label specifying path to protein binding pocket
       std::string m_MDL;
@@ -129,7 +129,7 @@ namespace bcl
       //! @param DRUG_LIKENESS_TYPE type of druglikeness filter to apply during clean
       FragmentMapConformer
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const bool CORINA_CONFS,
         const storage::Vector< size_t> &MOVEABLE_INDICES = storage::Vector< size_t>()
       );
@@ -143,7 +143,7 @@ namespace bcl
       //! @param BFACTORS vector of values indicating per-residue flexibility (higher values are more flexible)
       FragmentMapConformer
       (
-        const std::string &DRUG_LIKENESS_TYPE,
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
         const std::string &MDL,
         const std::string &BINDING_POCKET_FILENAME,
         const descriptor::CheminfoProperty &PROPERTY_SCORER,
@@ -191,7 +191,7 @@ namespace bcl
       AtomVector< AtomComplete> CleanAtoms
       (
         const AtomVector< AtomComplete> &ATOM_VEC,
-        const std::string &DRUG_LIKENESS_TYPE = "None",
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE = descriptor::CheminfoProperty( "Constant(1.0)"),
         const bool &SKIP_NEUT = true,
         const bool &SKIP_SATURATE_H = false
       ) const;
@@ -205,7 +205,7 @@ namespace bcl
       (
         const AtomVector< AtomComplete> &ATOM_VEC,
         const FragmentComplete &REFERENCE_MOL,
-        const std::string &DRUG_LIKENESS_TYPE = "None",
+        const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE = descriptor::CheminfoProperty( "Constant(1.0)"),
         const bool &SKIP_NEUT = true
       ) const;
 

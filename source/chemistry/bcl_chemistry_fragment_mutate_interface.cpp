@@ -220,7 +220,7 @@ namespace bcl
   ////////////////
 
     //! @brief set druglikeness type
-    void FragmentMutateInterface::SetDruglikenessType( const std::string &DRUGLIKENESS_TYPE)
+    void FragmentMutateInterface::SetDruglikenessType( const descriptor::CheminfoProperty &DRUGLIKENESS_TYPE)
     {
       m_DrugLikenessType = DRUGLIKENESS_TYPE;
     }
@@ -717,7 +717,7 @@ namespace bcl
         "the type of druglikeness filter to apply; "
         "returns input molecule if fails filter",
         io::Serialization::GetAgent( &m_DrugLikenessType),
-        "None"
+        "Constant(1.0)"
       );
 
       parameters.AddInitializer
