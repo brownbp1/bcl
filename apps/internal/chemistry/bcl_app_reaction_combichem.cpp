@@ -203,7 +203,7 @@ namespace bcl
           command::Parameter
           (
             "type", "the type of druglikenes to use",
-            command::ParameterCheckAllowed( storage::Vector< std::string>::Create( "IsConstitutionDruglike", "IsConstitutionDruglikeAndHitlike", "None")),
+            command::ParameterCheckAllowed( storage::Vector< std::string>::Create( "IsConstitutionDruglike", "IsConstitutionDruglikeAndHitlike", "Constant(1.0)")),
             "IsConstitutionDruglike"
           )
         )
@@ -765,11 +765,11 @@ namespace bcl
        static chemistry::FragmentMapConformer cleaner;
        if( m_CorinaFlag->GetFlag())
        {
-         cleaner = chemistry::FragmentMapConformer( "None", true);
+         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty("Constant(1.0)"), true);
        }
        else
        {
-         cleaner = chemistry::FragmentMapConformer( "None", false);
+         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty("Constant(1.0)"), false);
        }
        util::ShPtr< chemistry::FragmentComplete> clean_frag( cleaner.Clean
          (

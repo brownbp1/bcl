@@ -1042,7 +1042,7 @@ namespace bcl
         {
           // give the product realistic 3D coordinates
           BCL_MessageVrb( "Cleaning product atoms");
-          AtomVector< AtomComplete> temp_vec( cleaner.CleanAtoms( parent_atoms, "None", true, true));
+          AtomVector< AtomComplete> temp_vec( cleaner.CleanAtoms( parent_atoms, descriptor::CheminfoProperty("Constant(1.0)"), true, true));
           FragmentComplete clean_mol( temp_vec, "");
           BCL_MessageVrb( "Cleaning 3D coordinates of product");
           clean_mol = cleaner.Clean3DCoords( clean_mol);
