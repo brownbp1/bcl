@@ -336,7 +336,7 @@ namespace bcl
         "transform multi-dimensional array output with one of these allowed "
         "operations; final output will be a scalar value",
         io::Serialization::GetAgent( &m_CalculationType),
-        "Mean"
+        "Index"
       );
       member_data.AddInitializer
       (
