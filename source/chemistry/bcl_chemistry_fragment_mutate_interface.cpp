@@ -717,7 +717,7 @@ namespace bcl
         "the type of druglikeness filter to apply; "
         "returns input molecule if fails filter",
         io::Serialization::GetAgent( &m_DrugLikenessType),
-        "Constant(1.0)"
+        "IsConstitutionDruglike"
       );
 
       parameters.AddInitializer

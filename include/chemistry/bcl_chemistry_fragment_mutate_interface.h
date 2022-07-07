@@ -71,7 +71,7 @@ namespace bcl
       //////// General miscellaneous ////////
 
       //! type of drug likeness filter to apply during molecule cleaning
-      descriptor::CheminfoProperty m_DrugLikenessType = descriptor::CheminfoProperty( "Constant(1.0)");
+      descriptor::CheminfoProperty m_DrugLikenessType = descriptor::CheminfoProperty( "IsConstitutionDruglike");
 
       //! MDL property label specifying path to protein binding pocket
       std::string m_MDL = std::string();
