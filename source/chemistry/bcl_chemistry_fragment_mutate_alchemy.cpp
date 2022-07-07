@@ -556,7 +556,7 @@ namespace bcl
       (
         "allowed_elements",
         "elements that are accessible via this mutate",
-        io::Serialization::GetAgent( &m_AllowedElementsString),
+        io::Serialization::GetAgent( &m_AllowedElements),
         "H C O N S"
       );
 
