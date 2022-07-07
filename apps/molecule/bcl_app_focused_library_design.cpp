@@ -898,7 +898,8 @@ namespace bcl
             "the scoring function implementation to use",
             command::ParameterCheckSerializable
             (
-              chemistry::ScoreFunctionGeneric()
+//              chemistry::ScoreFunctionGeneric()
+              descriptor::CheminfoProperty()
             )
           )
         )

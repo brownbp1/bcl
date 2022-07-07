@@ -72,7 +72,7 @@ namespace bcl
     //! @brief default constructor
     ScoreFunctionGeneric::ScoreFunctionGeneric() :
         m_Descriptor( descriptor::CheminfoProperty()),
-        m_CalculationType( ScoreFunctionGeneric::e_Mean),
+        m_CalculationType( ScoreFunctionGeneric::e_Index),
         m_PropertyIndex( 0),
         m_Invert( false),
         m_Normalize( false),
@@ -87,7 +87,7 @@ namespace bcl
       const descriptor::CheminfoProperty &DESCRIPTOR
     ) :
       m_Descriptor( DESCRIPTOR),
-      m_CalculationType( ScoreFunctionGeneric::e_Mean),
+      m_CalculationType( ScoreFunctionGeneric::e_Index),
       m_PropertyIndex( 0),
       m_Invert( false),
       m_Normalize( false),
@@ -110,7 +110,7 @@ namespace bcl
       const double NOISE
     ) :
       m_Descriptor( DESCRIPTOR),
-      m_CalculationType( ScoreFunctionGeneric::e_Mean),
+      m_CalculationType( ScoreFunctionGeneric::e_Index),
       m_PropertyIndex( INDEX),
       m_Invert( INVERT),
       m_Normalize( NORMALIZE),
