@@ -49,12 +49,14 @@ namespace bcl
       const storage::Vector< size_t> &ATOM_INDICES,
       const bool REMOVE_BONDED_H,
       const bool INVERT,
-      const bool BREAK
+      const bool BREAK,
+      const bool CLOSE_OPEN_VALENCES
     ) :
       m_AtomIndices( ATOM_INDICES),
       m_RemoveBondedH( REMOVE_BONDED_H),
       m_Invert( INVERT),
-      m_Break( BREAK)
+      m_Break( BREAK),
+      m_CloseOpenValences( CLOSE_OPEN_VALENCES)
     {
     }
 
@@ -162,7 +164,7 @@ namespace bcl
       if( m_Invert)
       {
         // we need to add the bonded hydrogens after assigning the atom indices
-        if( m_RemoveBondedH)
+        if( !m_RemoveBondedH)
         {
           auto h_atoms( GetBondedHydrogenAtoms( m_AtomIndices, atoms));
           storage::Set< size_t> keep_indices_set( m_AtomIndices.Begin(), m_AtomIndices.End());
@@ -202,6 +204,12 @@ namespace bcl
 
       // build a new molecule
       FragmentComplete mol( atoms, CONFORMATION.GetName());
+
+      // saturate with hydrogen atoms to close valences
+      if( m_CloseOpenValences)
+      {
+        mol.SaturateWithH();
+      }
 
       // break if desired
       if( m_Break)
@@ -273,6 +281,13 @@ namespace bcl
         "if removing an atom separates a molecule into isolated components, return those isolated "
         "components as separate fragments; by default, a fragment complex is returned in such cases.",
         io::Serialization::GetAgent( &m_Break),
+        "false"
+      );
+      parameters.AddInitializer
+      (
+        "close_open_valences",
+        "after splitting, close any unsatisfied valences with hydrogen atoms in the resulting molecules",
+        io::Serialization::GetAgent( &m_CloseOpenValences),
         "false"
       );
 

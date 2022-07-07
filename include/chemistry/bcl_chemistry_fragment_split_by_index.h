@@ -65,6 +65,9 @@ namespace bcl
       //! break a fragment complex into isolated fragments
       bool m_Break;
 
+      //! close open valences with hydrogen atoms after breaks
+      bool m_CloseOpenValences;
+
     public:
 
       //! single instance of that class
@@ -83,7 +86,8 @@ namespace bcl
         const storage::Vector< size_t> &ATOM_INDICES = storage::Vector< size_t>(),
         const bool REMOVE_BONDED_H = true,
         const bool INVERT = false,
-        const bool BREAK = false
+        const bool BREAK = false,
+        const bool CLOSE_OPEN_VALENCES = false
       );
 
     /////////////////
