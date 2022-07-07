@@ -53,6 +53,7 @@ namespace bcl
     //////////
 
       //! the atom indices to remove from the input molecules
+      std::string m_AtomIndicesString;
       storage::Vector< size_t> m_AtomIndices;
 
       //! invert the atom index selection prior to removal

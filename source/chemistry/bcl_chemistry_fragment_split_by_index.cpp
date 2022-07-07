@@ -158,6 +158,12 @@ namespace bcl
     {
       if( m_AtomIndices.GetSize())
       {
+        // read in mutable atom indices
+        if( m_AtomIndicesString.size())
+        {
+          m_AtomIndices.Reset();
+          m_AtomIndices = util::SplitStringToNumerical< size_t>( m_AtomIndicesString);
+        }
         return true;
       }
 
@@ -178,7 +184,7 @@ namespace bcl
       (
         "atom_indices",
         "the 0-indexed atom indices to remove from the input molecules",
-        io::Serialization::GetAgent( &m_AtomIndices),
+        io::Serialization::GetAgent( &m_AtomIndicesString),
         ""
       );
       parameters.AddInitializer
