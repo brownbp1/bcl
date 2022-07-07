@@ -356,13 +356,23 @@ namespace bcl
                     );
 
                     // get best molecule and best score
-                    chemistry::FragmentComplete best_mol( last_accepted->First());
-                    linal::Vector< double> best_score( 1, last_accepted->Second());
+//                    chemistry::FragmentComplete best_mol( last_accepted->First());
+                    chemistry::FragmentComplete best_mol( approximator.GetTracker().GetBest()->First());
+//                    linal::Vector< double> best_score( 1, last_accepted->Second());
+                    linal::Vector< double> best_score( 1, approximator.GetTracker().GetBest()->Second());
                     best_mol.StoreProperty( "FLD_Score", best_score);
 
                     // save the final MCM molecule
                     if( m_ThreadManager->CheckUniqueConfiguration( best_mol))
                     {
+                      // compute the final metrics and save on molecule
+                      for( size_t i( 0), sz( m_FinalMetrics.GetSize()); i < sz; ++i)
+                      {
+                        const std::string &property_name( ( *m_FinalMetrics( i))->GetAlias());
+                        const linal::Vector< float> &property_value( ( *m_FinalMetrics( i))->SumOverObject( best_mol));
+                        best_mol.StoreProperty( property_name, property_value);
+                      }
+
                       m_ThreadManager->AddMolecule( best_mol);
                       m_ThreadManager->IncreaseMoleculeBuiltCount();
                     }
