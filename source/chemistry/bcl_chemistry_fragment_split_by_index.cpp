@@ -156,14 +156,11 @@ namespace bcl
       std::ostream &ERR_STREAM
     )
     {
-      if( m_AtomIndices.GetSize())
+      // read in atom indices
+      if( m_AtomIndicesString.size())
       {
-        // read in mutable atom indices
-        if( m_AtomIndicesString.size())
-        {
-          m_AtomIndices.Reset();
-          m_AtomIndices = util::SplitStringToNumerical< size_t>( m_AtomIndicesString);
-        }
+        m_AtomIndices.Reset();
+        m_AtomIndices = util::SplitStringToNumerical< size_t>( m_AtomIndicesString);
         return true;
       }
 
