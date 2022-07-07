@@ -556,7 +556,7 @@ namespace bcl
       (
         "allowed_elements",
         "elements that are accessible via this mutate",
-        io::Serialization::GetAgent( &m_AllowedElements),
+        io::Serialization::GetAgent( &m_AllowedElementsString),
         "H C O N S"
       );
 
@@ -620,7 +620,7 @@ namespace bcl
         // parse input
         const storage::Vector< std::string> allowed_elements
         (
-          util::SplitString( util::TrimString( m_AllowedElementsString), " \t\n\r,")
+          util::SplitString( util::TrimString( m_AllowedElementsString), " ")
         );
 
         // stupid check to add only the correct elements
