@@ -31,9 +31,9 @@ namespace bcl
   namespace chemistry
   {
 
-    ///////////
-    // Enums //
-    ///////////
+  ///////////
+  // Enums //
+  ///////////
 
     //! @brief CalculationType as string
     //! @param CALCULATION_TYPE the calculation type whose name is desired
@@ -54,7 +54,6 @@ namespace bcl
       };
       return s_Names[ CALCULATION_TYPE];
     }
-
 
   //////////
   // data //
@@ -271,45 +270,44 @@ namespace bcl
           Normalize( properties);
         }
 
-
       }
       // no no score defined; return 0.0
       BCL_MessageVrb( "No score defined; returning 0.0!");
       return 0.0;
     }
 
-    //////////////////////
-    // helper functions //
-    //////////////////////
+  //////////////////////
+  // helper functions //
+  //////////////////////
 
-      //! @brief invert each value of the property vector
-      void ScoreFunctionGeneric::Invert( linal::Vector< float> PROPERTIES) const
+    //! @brief invert each value of the property vector
+    void ScoreFunctionGeneric::Invert( linal::Vector< float> PROPERTIES) const
+    {
+      for
+      (
+          auto itr( PROPERTIES.Begin()), itr_end( PROPERTIES.End());
+          itr != itr_end;
+          ++itr
+      )
       {
-        for
-        (
-            auto itr( PROPERTIES.Begin()), itr_end( PROPERTIES.End());
-            itr != itr_end;
-            ++itr
-        )
-        {
-          *itr = 1.0 / *itr;
-        }
+        *itr = 1.0 / *itr;
       }
+    }
 
-      //! @brief normalize property vector by sum of all values
-      void ScoreFunctionGeneric::Normalize( linal::Vector< float> PROPERTIES) const
+    //! @brief normalize property vector by sum of all values
+    void ScoreFunctionGeneric::Normalize( linal::Vector< float> PROPERTIES) const
+    {
+      const double &sum( CalcSum( PROPERTIES));
+      for
+      (
+          auto itr( PROPERTIES.Begin()), itr_end( PROPERTIES.End());
+          itr != itr_end;
+          ++itr
+      )
       {
-        const double &sum( CalcSum( PROPERTIES));
-        for
-        (
-            auto itr( PROPERTIES.Begin()), itr_end( PROPERTIES.End());
-            itr != itr_end;
-            ++itr
-        )
-        {
-          *itr = *itr / sum;
-        }
+        *itr = *itr / sum;
       }
+    }
 
   //////////////////////
   // input and output //
@@ -376,7 +374,6 @@ namespace bcl
         io::Serialization::GetAgent( &m_Noise),
         "0.00000001"
       );
-
 
       return member_data;
     }

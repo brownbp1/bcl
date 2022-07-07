@@ -185,7 +185,6 @@ namespace bcl
         const FragmentComplete &MOLECULE
       ) const;
 
-
     //////////////////////
     // helper functions //
     //////////////////////

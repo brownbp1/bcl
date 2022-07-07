@@ -26,24 +26,7 @@ BCL_StaticInitializationFiascoFinder
 #include "chemistry/bcl_chemistry_constitution_set.h"
 #include "chemistry/bcl_chemistry_fragment_configuration_shared.h"
 #include "chemistry/bcl_chemistry_fragment_constitution_shared.h"
-#include "chemistry/bcl_chemistry_fragment_evolve_base.h"
-#include "chemistry/bcl_chemistry_fragment_grow.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_add_med_chem.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_alchemy.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_cyclize.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_extend_with_linker.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_fluorinate.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_halogenate.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_mcm.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_remove_atom.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_remove_bond.h"
-#include "chemistry/bcl_chemistry_fragment_mutate_ring_swap.h"
-#include "chemistry/bcl_chemistry_fragment_split_interface.h"
-#include "chemistry/bcl_chemistry_fragment_track_mutable_atoms.h"
-#include "chemistry/bcl_chemistry_pick_atom_random.h"
-#include "chemistry/bcl_chemistry_pick_fragment_random.h"
-#include "chemistry/bcl_chemistry_rotamer_library_file.h"
-#include "chemistry/bcl_chemistry_sample_conformations.h"
+#include "chemistry/bcl_chemistry_fragment_mutate_interface.h"
 #include "chemistry/bcl_chemistry_score_function_generic.h"
 #include "command/bcl_command_app_default_flags.h"
 #include "command/bcl_command_command.h"
@@ -104,88 +87,63 @@ namespace bcl
 
       // typedefs for convenience
       typedef util::ShPtr< math::MutateDecisionNode< chemistry::FragmentComplete> > Mutates;
+      typedef util::ShPtr< math::FunctionInterfaceSerializable< chemistry::FragmentComplete, double> > Score;
+      typedef util::ShPtrVector< descriptor::CheminfoProperty> Properties;
+      typedef opti::Tracker< chemistry::FragmentComplete, double> Tracker;
+      typedef util::ShPtr< chemistry::FragmentComplete> FragmentComplete_p;
 
-      //////////
-      // data //
-      //////////
+    //////////
+    // data //
+    //////////
 
-        //! flag to control number of molecules to be generated
-        util::ShPtr< command::FlagInterface> m_NumberMoleculesFlag;
+      //! flag to control input base fragment
+      util::ShPtr< command::FlagInterface> m_StartFragmentFlag;
 
-        //! flag to control the number of MC iterations in molecule optimization
-        util::ShPtr< command::FlagInterface> m_NumberIterationsFlag;
+      //! flag for defining output filename,
+      util::ShPtr< command::FlagInterface> m_OutputFilenameFlag;
 
-        //! flag to control the number of maximum allowed consecutive unimproved MC iterations
-        util::ShPtr< command::FlagInterface> m_NumberUnimprovedFlag;
+      //! flag to specify mutate implementations
+      util::ShPtr< command::FlagInterface> m_MutateFlag;
 
-        //! flag to control the number of maximum allowed skipped MC iterations
-        util::ShPtr< command::FlagInterface> m_NumberSkippedFlag;
+      //! flag to specify mutate implementation probabilities
+      util::ShPtr< command::FlagInterface> m_MutateProbabilityFlag;
 
-        //! flag to specify mutate implementations
-        util::ShPtr< command::FlagInterface> m_MutateFlag;
+      //! flag controlling the maximum possible number of sequential mutates that can occur between MCM evaluation
+      util::ShPtr< command::FlagInterface> m_MaxSequentialMutatesFlag;
 
-        //! flag to specify mutate implementation probabilities
-        util::ShPtr< command::FlagInterface> m_MutateProbabilityFlag;
+      //! flag to specify the MCM score function as a descriptor
+      util::ShPtr< command::FlagInterface> m_PropertyScoringFunctionFlag;
 
-        //! flag to control the temperature for the Metropolis criterion
-        util::ShPtr< command::FlagInterface> m_MetropolisTemperatureFlag;
+      //! flag for descriptors to compute for the final ensemble
+      util::ShPtr< command::FlagInterface> m_FinalMetricsFlag;
 
-        //! flag to control input base fragment
-        util::ShPtr< command::FlagInterface> m_StartFragmentFlag;
+      //! flag to control number of molecules to be generated
+      util::ShPtr< command::FlagInterface> m_NumberMoleculesFlag;
 
-        //! flag for defining output filename,
-        util::ShPtr< command::FlagInterface> m_OutputFilenameFlag;
+      //! flag to control the number of MC iterations in molecule optimization
+      util::ShPtr< command::FlagInterface> m_NumberIterationsFlag;
 
-        //! flag for defining input fragments
-        util::ShPtr< command::FlagInterface> m_GrowFragmentsFlag;
+      //! flag to control the number of maximum allowed consecutive unimproved MC iterations
+      util::ShPtr< command::FlagInterface> m_NumberUnimprovedFlag;
 
-        //! flag for an alternative score function to just the trained model
-        util::ShPtr< command::FlagInterface> m_PropertyScoringFunctionFlag;
+      //! flag to control the number of maximum allowed skipped MC iterations
+      util::ShPtr< command::FlagInterface> m_NumberSkippedFlag;
 
-        //! flag for the druglikeness filter to use
-        util::ShPtr< command::FlagInterface> m_DrugLikenessTypeFlag;
+      //! flag to control the temperature for the Metropolis criterion
+      util::ShPtr< command::FlagInterface> m_MetropolisTemperatureFlag;
 
-        //! flag to split molecules
-        util::ShPtr< command::FlagInterface> m_SplitImplementationFlag;
+      //! flag to maximize score istead of minimize
+      util::ShPtr< command::FlagInterface> m_LargerIsBetterFlag;
 
-        //! flag to do an internal MCM optimization
-        util::ShPtr< command::FlagInterface> m_SimulatedAnnealingFlag;
+      //! flag to save all molecules accepted or improved by main MCM
+      util::ShPtr< command::FlagInterface> m_SaveAllAcceptedImprovedFlag;
 
-        //! flag to maximize score istead of minimize
-        util::ShPtr< command::FlagInterface> m_LargerIsBetterFlag;
+    ///////////////////////////////////
+    // construction and destruction //
+    ///////////////////////////////////
 
-        //! flag to save all molecules accepted or improved by main MCM
-        util::ShPtr< command::FlagInterface> m_SaveAllAcceptedImprovedFlag;
-
-        //! flag to use corina to generate starting conformer
-        util::ShPtr< command::FlagInterface> m_Corina;
-
-        //! flag to set 3D VDW score cutoff
-        util::ShPtr< command::FlagInterface> m_VDWClashCutoffFlag;
-
-        //! flag to enable pose-dependent scoring (default is ligand-based scoring)
-        util::ShPtr< command::FlagInterface> m_PoseDependentFlag;
-
-        //! flag controlling the maximum possible number of sequential mutates that can occur between MCM evaluation
-        util::ShPtr< command::FlagInterface> m_MaxSequentialMutatesFlag;
-
-        //! flags controling relative probabilities of different mutate objects
-        util::ShPtr< command::FlagInterface> m_RingSwapProbFlag;
-        util::ShPtr< command::FlagInterface> m_CyclizeProbFlag;
-        util::ShPtr< command::FlagInterface> m_AlchemyProbFlag;
-        util::ShPtr< command::FlagInterface> m_RemoveAtomProbFlag;
-        util::ShPtr< command::FlagInterface> m_RemoveBondProbFlag;
-        util::ShPtr< command::FlagInterface> m_AddMedChemProbFlag;
-        util::ShPtr< command::FlagInterface> m_FluorinateProbFlag;
-        util::ShPtr< command::FlagInterface> m_HalogenateProbFlag;
-        util::ShPtr< command::FlagInterface> m_ExtendWithLinkerProbFlag;
-
-      ///////////////////////////////////
-      // construction and destruction //
-      ///////////////////////////////////
-
-        //! default constructor
-        FocusedLibraryDesign();
+      //! default constructor
+      FocusedLibraryDesign();
 
       // ThreadManager needs access to private nested classes
       friend class ThreadManager;
@@ -211,34 +169,14 @@ namespace bcl
       // Data //
       ///////////
 
-          const size_t                                            m_NumberOfMoleculesRequested; // Number of molecules to build
-          size_t                                                  m_NumberOfMoleculesBuilt; // Number of molecules already built
-          const size_t                                            m_NumberMCIterations; // Number of iterations in the MC approximator
-          const size_t                                            m_NumberMCUnimproved; // Number of allowed consecutive unimproved MC iterations
-          const size_t                                            m_NumberMCSkipped; // Number of allowed skipped MC iterations
-          Mutates												  m_Mutates; // The mutates to perform
-          const float                                             m_MetropolisTemperature; // Tempterature during Metropolis criterion evaluation
-          const size_t                                            m_Threads; // Number of threads
-          chemistry::FragmentEnsemble                             m_Molecules; // The molecules which have been built and are ready for output
-          chemistry::ConstitutionSet                              m_UniqueConsts; // The unique molecules which have been built
-          chemistry::ConfigurationSet                             m_UniqueConfigs; // The unique molecules which have been built
-          io::OFStream                                            m_OutputStream; // Output file to write molecules to
-          const std::string                                       m_DrugLikenessType; // type of druglikeness filter to use for skipping MCM steps
-          const float                                             m_VDWScoreCutoff; // internal VDW score cutoff for 3D conformer (used to check for mols with reasonable substitutions)
-          const util::Implementation< chemistry::FragmentSplitInterface> m_SplitImplementation; // splitter to use when making fragments for internal MCM optimization
-          const std::string                                       m_PoseDependentMDLProperty; // enable pose-dependent scoring with the receptor indicated by this property
-          const std::string                                       m_PoseDependentResolveClashes; // resolve clashes between ligand and receptor
-          const size_t                                            m_MaxSequentialMutates;
-          const float                                             m_RingSwapProb;
-          const float                                             m_CyclizeProb;
-          const float                                             m_AlchemyProb;
-          const float                                             m_RemoveAtomProb;
-          const float                                             m_RemoveBondProb;
-          const float                                             m_AddMedChemProb;
-          const float                                             m_FluorinateProb;
-          const float                                             m_HalogenateProb;
-          const float                                             m_ExtendWithLinkerProb;
-          sched::Mutex                                            m_Mutex; // Lock for updating Workers
+          const size_t                  m_NumberOfMoleculesRequested; //< Number of molecules to build
+          size_t                        m_NumberOfMoleculesBuilt;     //< Number of molecules already built
+          const size_t                  m_Threads;                    //< Number of threads
+          chemistry::FragmentEnsemble   m_Molecules;                  //< The molecules which have been built and are ready for output
+          chemistry::ConstitutionSet    m_UniqueConsts;               //< The unique molecules which have been built
+          chemistry::ConfigurationSet   m_UniqueConfigs;              //< The unique molecules which have been built
+          io::OFStream                  m_OutputStream;               //< Output file to write molecules to
+          sched::Mutex                  m_Mutex;                      //< Lock for updating Workers
 
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           //!
@@ -251,21 +189,19 @@ namespace bcl
           //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           struct Worker
           {
-            // Rotamer library to use - read in at Main()
-            util::ShPtr< chemistry::FragmentComplete>                                                m_StartFragment; // Base fragment to use
-            descriptor::CheminfoProperty                                                             m_PropertyScorer; // Set objective function with property instead of model
-            size_t                                                                                   m_NumberMCIterations; // Number of MC iterations
-            size_t                                                                                   m_NumberMCUnimproved; // Number of allowed consecutive unimproved MC iterations
-            size_t                                                                                   m_NumberMCSkipped; // Number of allowed consecutive unimproved MC iterations
-            float                                                                                    m_MetropolisTemperature; // Temperature during Metropolis criterion evaluation
-            opti::Tracker< chemistry::FragmentComplete, double>                                      m_OptiGoal;
-            bool                                                                                     m_SaveAllAcceptedImproved;
-            std::string                                                                              m_ConformationComparer; // Conformation comparer
-            util::ShPtr< math::FunctionInterfaceSerializable< chemistry::FragmentComplete, double> > m_Score; // Objective function
-            util::ShPtr< math::MutateInterface< chemistry::FragmentComplete> >                       m_Mutate; // Grow molecules from scaffold
-            bool                                                                                     m_Corina; // enables corina conformers during cleaning
-            util::SiPtr< ThreadManager>                                                              m_ThreadManager; // Pointer to the thread manager, needed so Worker can be updated
-            descriptor::CheminfoProperty                                                             m_BondDruglikeness; // MoleculeTotalDruglikeBondEnergy
+            util::SiPtr< ThreadManager>    m_ThreadManager;           //< Pointer to the thread manager, needed so Worker can be updated
+            FragmentComplete_p             m_StartFragment;           //< Base fragment to use
+            descriptor::CheminfoProperty   m_PropertyScorer;          //< Set objective function with property instead of model
+            Mutates                        m_Mutate;                  //< Grow molecules from scaffold
+            Score                          m_Score;                   //< Objective function
+            Properties                     m_FinalMetrics;            //< Metrics to compute on final ensemble
+            Tracker                        m_OptiGoal;                //< Tracker tracking up or down
+            size_t                         m_NumberMCIterations;      //< Number of MC iterations
+            size_t                         m_NumberMCUnimproved;      //< Number of allowed consecutive unimproved MC iterations
+            size_t                         m_NumberMCSkipped;         //< Number of allowed consecutive unimproved MC iterations
+            float                          m_MetropolisTemperature;   //< Temperature during Metropolis criterion evaluation
+            bool                           m_SaveAllAcceptedImproved; //< Collect every molecule that is accepted or improved
+            descriptor::CheminfoProperty   m_BondDruglikeness;        //< MoleculeTotalDruglikeBondEnergy
 
            // Builds and score the molecule
             void RunThread()
@@ -309,7 +245,7 @@ namespace bcl
                 double druglike_mol_activity( ( *m_Score)( approximator.GetTracker().GetCurrent()->First()));
 
                 // tell me about the scaffold
-                BCL_MessageStd("Scaffold properties");
+                BCL_MessageStd( "Scaffold properties");
                 ReportThreadMoleculeProgress( approximator.GetTracker().GetCurrent()->First());
                 BCL_MessageStd( "FLD_Score: " + util::Format()( druglike_mol_activity));
 
@@ -338,7 +274,7 @@ namespace bcl
                     BCL_MessageStd( "MCM Rejected");
                   }
                   // save every accepted/improved step of MCM
-                  // hack - add this to approximator at some point
+                  // TODO: add this to approximator to avoid having to manually do the MCM
                   if( last_accepted.IsDefined() && m_SaveAllAcceptedImproved)
                   {
                     m_ThreadManager->m_Mutex.Lock();
@@ -350,13 +286,27 @@ namespace bcl
 //                        "Chemical perturbations from most recent to least recent: "
 //                      );
 //                      approximator.GetMu
+
+                      // grab the last accepted molecule
                       chemistry::FragmentComplete best_mol( last_accepted->First());
-                      linal::Vector< double> best_score( 1, last_accepted->Second());
-                      best_mol.StoreProperty( "FLD_Score", best_score);
 
                       // save the final MCM molecule
                       if( m_ThreadManager->CheckUniqueConfiguration( best_mol))
                       {
+
+                        // assign final FLD score to last accepted molecule
+                        linal::Vector< double> best_score( 1, last_accepted->Second());
+                        best_mol.StoreProperty( "FLD_Score", best_score);
+
+                        // compute the final metrics and save on molecule
+                        for( size_t i( 0), sz( m_FinalMetrics.GetSize()); i < sz; ++i)
+                        {
+                          const std::string &property_name( ( *m_FinalMetrics( i))->GetAlias());
+                          const linal::Vector< float> &property_value( ( *m_FinalMetrics( i))->SumOverObject( best_mol));
+                          best_mol.StoreProperty( property_name, property_value);
+                        }
+
+                        // add final molecule to ensemble
                         m_ThreadManager->AddMolecule( best_mol);
                         m_ThreadManager->IncreaseMoleculeBuiltCount();
                       }
@@ -461,199 +411,36 @@ namespace bcl
 
           //! param
           ThreadManager(
-            util::ShPtr< chemistry::FragmentComplete>              START_FRAGMENT, // Base fragment to use
-            util::ShPtr< chemistry::FragmentEnsemble>              FRAGMENT_POOL, // Fragments to add to base fragment
-            descriptor::CheminfoProperty                           PROPERTY_SCORER, // alternative scorer
-            bool                                                   INTERNAL_MCM_OPTI,
-            opti::Tracker< chemistry::FragmentComplete, double>    MCM_OPTI_GOAL,
-            bool                                                   SAVE_ALL_ACCEPTED_IMPROVED,
-            const size_t                                           &NUMBER_OF_MOLECULES, // Number to build
-            const size_t                                           &NUMBER_OF_ITERATIONS, // Number of MC iterations
-            const size_t                                           &NUMBER_UNIMPROVED_ITERATIONS, // Number of allowed consecutive unimproved MC iterations
-            const size_t                                           &NUMBER_SKIPPED_ITERATIONS, // Number of allowed consecutive unimproved MC iterations
-            const float                                            &METROPOLIS_TEMPERATURE, // Temperature during Metropolis criterion evaluation
-            const size_t                                           &NUMBER_THREADS, // Number of threads (from scheduler)
-            const std::string                                      &OUTPUT_FILENAME,
-            const std::string                                      &DRUG_LIKENESS_TYPE,
-            const float                                            &VDW_SCORE_CUTOFF,
-            const util::Implementation< chemistry::FragmentSplitInterface> &SPLIT_IMPLEMENTATION,
-            const size_t                                           &MAX_SEQUENTIAL_MUTATES,
-            const float                                            &RING_SWAP_PROB,
-            const float                                            &CYCLIZE_PROB,
-            const float                                            &ALCHEMY_PROB,
-            const float                                            &REMOVE_ATOM_PROB,
-            const float                                            &REMOVE_BOND_PROB,
-            const float                                            &ADD_MEDCHEM_PROB,
-            const float                                            &FLUORINATE_PROB,
-            const float                                            &HALOGENATE_PROB,
-            const float                                            &EXTEND_WITH_LINKER_PROB,
-            const std::string                                      &POSE_DEPENDENT_MDL_PROPERTY, // pose-dependent scoring
-            const std::string                                      &POSE_DEPENDENT_RESOLVE_CLASHES, // resolve clashes
-            const bool                                             &CORINA_CONFS // enables cornina conformers during cleaning
+            const size_t                        NUMBER_THREADS,               //< Number of threads (from scheduler)
+            const FragmentComplete_p            &START_FRAGMENT,              //< Base fragment to use
+            const std::string                   &OUTPUT_FILENAME,             //< Output filename
+            const Mutates                       &MUTATES,                     //< Mutates with probabilities to apply to chemical scaffold
+            const descriptor::CheminfoProperty  &PROPERTY_SCORER,             //< Alternative scorer
+            const Properties                    &FINAL_METRICS,               //< Metrics to compute on final ensemble
+            const Tracker                       &MCM_OPTI_GOAL,               //< Whether to optimize up or down
+            const size_t                        NUMBER_OF_MOLECULES,          //< Number to build
+            const size_t                        NUMBER_OF_ITERATIONS,         //< Number of MC iterations
+            const size_t                        NUMBER_UNIMPROVED_ITERATIONS, //< Number of allowed consecutive unimproved MC iterations
+            const size_t                        NUMBER_SKIPPED_ITERATIONS,    //< Number of allowed consecutive unimproved MC iterations
+            const float                         METROPOLIS_TEMPERATURE,       //< Temperature during Metropolis criterion evaluation
+            bool                                SAVE_ALL_ACCEPTED_IMPROVED,   //< Save every accepted/improved molecule
+            const size_t                        MAX_SEQUENTIAL_MUTATES        //< Maximum number of times to apply the mutate prior to scoring
           ) :
             m_NumberOfMoleculesRequested( NUMBER_OF_MOLECULES),
             m_NumberOfMoleculesBuilt( 0),
-            m_NumberMCIterations( NUMBER_OF_ITERATIONS),
-            m_NumberMCUnimproved( NUMBER_UNIMPROVED_ITERATIONS),
-            m_NumberMCSkipped( NUMBER_SKIPPED_ITERATIONS),
-            m_MetropolisTemperature( METROPOLIS_TEMPERATURE),
-            m_Threads( std::min( NUMBER_THREADS, NUMBER_OF_MOLECULES)),
-            m_DrugLikenessType( DRUG_LIKENESS_TYPE),
-            m_VDWScoreCutoff( VDW_SCORE_CUTOFF),
-            m_SplitImplementation( SPLIT_IMPLEMENTATION),
-            m_MaxSequentialMutates( MAX_SEQUENTIAL_MUTATES),
-            m_RingSwapProb( RING_SWAP_PROB),
-            m_CyclizeProb( CYCLIZE_PROB),
-            m_AlchemyProb( ALCHEMY_PROB),
-            m_RemoveAtomProb( REMOVE_ATOM_PROB),
-            m_RemoveBondProb( REMOVE_BOND_PROB),
-            m_AddMedChemProb( ADD_MEDCHEM_PROB),
-            m_FluorinateProb( FLUORINATE_PROB),
-            m_HalogenateProb( HALOGENATE_PROB),
-            m_ExtendWithLinkerProb( EXTEND_WITH_LINKER_PROB),
-            m_PoseDependentMDLProperty( POSE_DEPENDENT_MDL_PROPERTY),
-            m_PoseDependentResolveClashes( POSE_DEPENDENT_RESOLVE_CLASHES)
+            m_Threads( std::min( NUMBER_THREADS, NUMBER_OF_MOLECULES))
           {
             // prepare output filestream
             io::File::MustOpenOFStream( m_OutputStream, OUTPUT_FILENAME);
-
-            // tree search for RingSwap
-            util::ShPtr< chemistry::SearchFragmentLibraryFromTree> tree_search
-            (
-              new chemistry::SearchFragmentLibraryFromTree
-              (
-                *util::Implementation< chemistry::RotamerLibraryInterface>( chemistry::RotamerLibraryInterface::GetDefault())
-              )
-            );
-
-            // set up our primary mutater object
-            util::ShPtr< math::MutateDecisionNode< chemistry::FragmentComplete> > mutater
-            (
-              new math::MutateDecisionNode< chemistry::FragmentComplete>()
-            );
-
-            // if the internal MCM local optimization option is selected
-            if( INTERNAL_MCM_OPTI)
-            {
-              // POSE-DEPENDENT CONSTRUCTION OF MUTATES //
-              if( !POSE_DEPENDENT_MDL_PROPERTY.empty())
-              {
-                BCL_MessageStd( "Pose-dependent scoring enabled");
-                // set clash resolver
-                bool clash_resolver;
-                POSE_DEPENDENT_RESOLVE_CLASHES == "true" ?
-                    clash_resolver = true:
-                    clash_resolver = false;
-                mutater->AddMutate
-                (
-                  chemistry::FragmentMutateMCM
-                  (
-                    MCM_OPTI_GOAL,
-                    SPLIT_IMPLEMENTATION,
-                    tree_search,
-                    FRAGMENT_POOL,
-                    m_DrugLikenessType,
-                    *START_FRAGMENT,
-                    chemistry::FragmentEnsemble( storage::List< chemistry::FragmentComplete>( 1, *START_FRAGMENT)),
-                    storage::Vector< size_t>(),
-                    POSE_DEPENDENT_MDL_PROPERTY,
-                    PROPERTY_SCORER,
-                    clash_resolver,
-                    storage::Vector< float>(),
-                    CORINA_CONFS,
-                    m_MaxSequentialMutates,
-                    m_RingSwapProb,
-                    m_CyclizeProb,
-                    m_AlchemyProb,
-                    m_RemoveAtomProb,
-                    m_RemoveBondProb,
-                    m_AddMedChemProb,
-                    m_FluorinateProb,
-                    m_HalogenateProb,
-                    m_ExtendWithLinkerProb
-                  ),
-                  1.0
-                );
-              }
-              // POSE-INDEPENDENT CONSTRUCTION OF MUTATES //
-              else
-              {
-                mutater->AddMutate
-                (
-                  chemistry::FragmentMutateMCM
-                  (
-                    MCM_OPTI_GOAL,
-                    SPLIT_IMPLEMENTATION,
-                    tree_search,
-                    FRAGMENT_POOL,
-                    m_DrugLikenessType,
-                    *START_FRAGMENT,
-                    chemistry::FragmentEnsemble( storage::List< chemistry::FragmentComplete>( 1, *START_FRAGMENT)),
-                    storage::Vector< size_t>(),
-                    PROPERTY_SCORER,
-                    CORINA_CONFS,
-                    m_MaxSequentialMutates,
-                    m_RingSwapProb,
-                    m_CyclizeProb,
-                    m_AlchemyProb,
-                    m_RemoveAtomProb,
-                    m_RemoveBondProb,
-                    m_AddMedChemProb,
-                    m_FluorinateProb,
-                    m_HalogenateProb,
-                    m_ExtendWithLinkerProb
-                  ),
-                  1.0
-                );
-              }
-            }
-            // otherwise, just add the mutates and let them fly
-            else
-            {
-              // POSE-DEPENDENT CONSTRUCTION OF MUTATES //
-              chemistry::FragmentEnsemble scaffold_ens( storage::List< chemistry::FragmentComplete>( 1, chemistry::FragmentComplete()));
-              if( !POSE_DEPENDENT_MDL_PROPERTY.empty())
-              {
-                BCL_MessageStd( "Pose-dependent scoring enabled");
-                // set clash resolver
-                bool clash_resolver;
-                POSE_DEPENDENT_RESOLVE_CLASHES == "true" ?
-                    clash_resolver = true:
-                    clash_resolver = false;
-                mutater->AddMutate( chemistry::FragmentRingSwap( tree_search, m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS, true, false, 0.1, true, true), m_RingSwapProb);
-                mutater->AddMutate( chemistry::FragmentCyclize( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_CyclizeProb);
-                mutater->AddMutate( chemistry::FragmentAlchemy( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_AlchemyProb);
-                mutater->AddMutate( chemistry::FragmentRemoveAtom( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_RemoveAtomProb);
-                mutater->AddMutate( chemistry::FragmentRemoveBond( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_RemoveBondProb);
-                mutater->AddMutate( chemistry::FragmentExtendWithLinker( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_ExtendWithLinkerProb);
-                mutater->AddMutate( chemistry::FragmentAddMedChem( FRAGMENT_POOL, m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_AddMedChemProb);
-                mutater->AddMutate( chemistry::FragmentFluorinate( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_FluorinateProb);
-                mutater->AddMutate( chemistry::FragmentHalogenate( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), POSE_DEPENDENT_MDL_PROPERTY, PROPERTY_SCORER, clash_resolver, storage::Vector< float>(), CORINA_CONFS), m_HalogenateProb);
-              }
-              // POSE-INDEPENDENT CONSTRUCTION OF MUTATES //
-              else
-              {
-                BCL_MessageStd( "Pose-independent scoring enabled");
-                mutater->AddMutate( chemistry::FragmentRingSwap( tree_search, m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS, true, false, 0.1, true, true), m_RingSwapProb);
-                mutater->AddMutate( chemistry::FragmentCyclize( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_CyclizeProb);
-                mutater->AddMutate( chemistry::FragmentAlchemy( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_AlchemyProb);
-                mutater->AddMutate( chemistry::FragmentRemoveAtom( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_RemoveAtomProb);
-                mutater->AddMutate( chemistry::FragmentRemoveBond( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_RemoveBondProb);
-                mutater->AddMutate( chemistry::FragmentExtendWithLinker( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_ExtendWithLinkerProb);
-                mutater->AddMutate( chemistry::FragmentAddMedChem( FRAGMENT_POOL, m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_AddMedChemProb);
-                mutater->AddMutate( chemistry::FragmentFluorinate( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_FluorinateProb);
-                mutater->AddMutate( chemistry::FragmentHalogenate( m_DrugLikenessType, *START_FRAGMENT, scaffold_ens, storage::Vector< size_t>(), CORINA_CONFS), m_HalogenateProb);
-              }
-            }
 
             // set up sequential mutate to perform 1 to N mutates in a row prior to scoring (does not bypass druglikeness filtering)
             util::ShPtr< math::MutateInterface< chemistry::FragmentComplete> > mutate_repeater
             (
               new math::MutateRepeat< chemistry::FragmentComplete>
               (
-                mutater,
+                MUTATES,
                 1,
-                m_MaxSequentialMutates
+                MAX_SEQUENTIAL_MUTATES
               )
             );
 
@@ -666,30 +453,20 @@ namespace bcl
             )
             {
               Worker &worker_ref( *itr);
+              worker_ref.m_ThreadManager                = this;
               worker_ref.m_StartFragment                = START_FRAGMENT.HardCopy();
               worker_ref.m_StartFragment->GetCacheMap() = util::ShPtr< descriptor::CacheMap>( new descriptor::CacheMap);
-              worker_ref.m_NumberMCIterations           = m_NumberMCIterations;
-              worker_ref.m_NumberMCUnimproved           = m_NumberMCUnimproved;
-              worker_ref.m_NumberMCSkipped              = m_NumberMCSkipped;
-              worker_ref.m_MetropolisTemperature        = m_MetropolisTemperature;
-              worker_ref.m_OptiGoal                     = MCM_OPTI_GOAL;
-              worker_ref.m_SaveAllAcceptedImproved      = SAVE_ALL_ACCEPTED_IMPROVED;
-              worker_ref.m_Corina                       = CORINA_CONFS;
-              worker_ref.m_ThreadManager                = this;
+              worker_ref.m_Mutate                       = mutate_repeater;
               worker_ref.m_PropertyScorer               = PROPERTY_SCORER.HardCopy();
-              worker_ref.m_BondDruglikeness				= descriptor::CheminfoProperty( "MoleculeTotalDruglikeBondEnergy");
-              worker_ref.m_Score                        = util::ShPtr< math::FunctionInterfaceSerializable< chemistry::FragmentComplete, double> >
-              (
-                new chemistry::ScoreFunctionGeneric( worker_ref.m_PropertyScorer)
-              );
-              if( INTERNAL_MCM_OPTI)
-              {
-                worker_ref.m_Mutate = mutater;
-              }
-              else
-              {
-                worker_ref.m_Mutate = mutate_repeater;
-              }
+              worker_ref.m_Score                        = Score( new chemistry::ScoreFunctionGeneric( worker_ref.m_PropertyScorer) );
+              worker_ref.m_FinalMetrics                 = FINAL_METRICS;
+              worker_ref.m_OptiGoal                     = MCM_OPTI_GOAL;
+              worker_ref.m_NumberMCIterations           = NUMBER_OF_ITERATIONS;
+              worker_ref.m_NumberMCUnimproved           = NUMBER_UNIMPROVED_ITERATIONS;
+              worker_ref.m_NumberMCSkipped              = NUMBER_SKIPPED_ITERATIONS;
+              worker_ref.m_MetropolisTemperature        = METROPOLIS_TEMPERATURE;
+              worker_ref.m_SaveAllAcceptedImproved      = SAVE_ALL_ACCEPTED_IMPROVED;
+              worker_ref.m_BondDruglikeness             = descriptor::CheminfoProperty( "MoleculeTotalDruglikeBondEnergy");
             }
 
             // Allocate space for jobs
@@ -736,31 +513,19 @@ namespace bcl
             m_NumberOfMoleculesBuilt++;
           }
 
+          // Return the number of molecules built
           size_t GetNumberMoleculesBuilt()
           {
             return m_NumberOfMoleculesBuilt;
           }
 
+          // Return the number of molecules requested be built
           size_t GetNumberMoleculesToBuild()
           {
             return m_NumberOfMoleculesRequested;
           }
 
-          size_t GetNumberMCIterations()
-          {
-            return m_NumberMCIterations;
-          }
-
-          size_t GetNumberMCUnimproved()
-          {
-            return m_NumberMCUnimproved;
-          }
-
-          size_t GetNumberMCSkipped()
-          {
-            return m_NumberMCSkipped;
-          }
-
+          // Return true if the molecule is unique among built molecules
           bool CheckUniqueConstitution( const chemistry::FragmentComplete &MOLECULE)
           {
             bool unique( m_UniqueConsts.Insert( chemistry::FragmentConstitutionShared( MOLECULE)).second);
@@ -769,6 +534,7 @@ namespace bcl
             return unique;
           }
 
+          // Return true if the molecule is unique among built molecules
           bool CheckUniqueConfiguration( const chemistry::FragmentComplete &MOLECULE)
           {
             bool unique( m_UniqueConfigs.Insert( chemistry::FragmentConfigurationShared( MOLECULE)).second);
@@ -777,6 +543,7 @@ namespace bcl
             return unique;
           }
 
+          // Add molecule to final ensemble
           void AddMolecule( const chemistry::FragmentComplete &MOLECULE)
           {
             m_Molecules.PushBack( MOLECULE);
@@ -882,33 +649,20 @@ namespace bcl
       /////////////////////
 
         // insert all the flags and params
+        sp_cmd->AddFlag( m_StartFragmentFlag);
+        sp_cmd->AddFlag( m_OutputFilenameFlag);
+        sp_cmd->AddFlag( m_MutateFlag);
+        sp_cmd->AddFlag( m_MutateProbabilityFlag);
+        sp_cmd->AddFlag( m_MaxSequentialMutatesFlag);
+        sp_cmd->AddFlag( m_PropertyScoringFunctionFlag);
+        sp_cmd->AddFlag( m_FinalMetricsFlag);
         sp_cmd->AddFlag( m_NumberMoleculesFlag);
         sp_cmd->AddFlag( m_NumberIterationsFlag);
         sp_cmd->AddFlag( m_NumberUnimprovedFlag);
         sp_cmd->AddFlag( m_NumberSkippedFlag);
         sp_cmd->AddFlag( m_MetropolisTemperatureFlag);
-        sp_cmd->AddFlag( m_StartFragmentFlag);
-        sp_cmd->AddFlag( m_OutputFilenameFlag);
-        sp_cmd->AddFlag( m_GrowFragmentsFlag);
-        sp_cmd->AddFlag( m_PropertyScoringFunctionFlag);
-        sp_cmd->AddFlag( m_DrugLikenessTypeFlag);
-        sp_cmd->AddFlag( m_SplitImplementationFlag);
-        sp_cmd->AddFlag( m_SimulatedAnnealingFlag);
         sp_cmd->AddFlag( m_LargerIsBetterFlag);
         sp_cmd->AddFlag( m_SaveAllAcceptedImprovedFlag);
-        sp_cmd->AddFlag( m_Corina);
-        sp_cmd->AddFlag( m_VDWClashCutoffFlag);
-        sp_cmd->AddFlag( m_PoseDependentFlag);
-        sp_cmd->AddFlag( m_MaxSequentialMutatesFlag);
-        sp_cmd->AddFlag( m_RingSwapProbFlag);
-        sp_cmd->AddFlag( m_CyclizeProbFlag);
-        sp_cmd->AddFlag( m_AlchemyProbFlag);
-        sp_cmd->AddFlag( m_RemoveAtomProbFlag);
-        sp_cmd->AddFlag( m_RemoveBondProbFlag);
-        sp_cmd->AddFlag( m_AddMedChemProbFlag);
-        sp_cmd->AddFlag( m_FluorinateProbFlag);
-        sp_cmd->AddFlag( m_HalogenateProbFlag);
-        sp_cmd->AddFlag( m_ExtendWithLinkerProbFlag);
 
       ///////////////////
       // default flags //
@@ -946,6 +700,10 @@ namespace bcl
         // setup the mutates
         auto mutate_input( m_MutateFlag->GetStringList());
         auto mutate_probs( m_MutateProbabilityFlag->GetNumericalList< float>());
+        if( mutate_probs.GetSize() != mutate_input.GetSize())
+        {
+          mutate_probs = storage::Vector< float>( mutate_input.GetSize(), 1.0);
+        }
         Mutates mutates;
         for
         (
@@ -958,11 +716,18 @@ namespace bcl
           mutates->AddMutate( *implementation, mutate_probs( mutate_i));
         }
 
-        // read internal mcm opti flag
-        bool internal_mcm_opti( false);
-        if( m_SimulatedAnnealingFlag->GetFlag())
+        // setup the final metrics
+        auto final_metrics_input( m_FinalMetricsFlag->GetStringList());
+        Properties final_metrics;
+        for
+        (
+            size_t prop_i( 0), prop_sz( final_metrics_input.GetSize());
+            prop_i < prop_sz;
+            ++prop_i
+        )
         {
-          internal_mcm_opti = true;
+          util::ShPtr< descriptor::CheminfoProperty> property( new descriptor::CheminfoProperty( final_metrics_input( prop_i)));
+          final_metrics.PushBack( property);
         }
 
         // set MCM optimization goal
@@ -979,43 +744,9 @@ namespace bcl
           save_all_accepted_improved = true;
         }
 
-        // set corina conformers
-        bool corina_confs( false);
-        if( m_Corina->GetFlag())
-        {
-          corina_confs = true;
-        }
-
-        // get splitter
-        util::Implementation< chemistry::FragmentSplitInterface> splitter;
-        if( m_SplitImplementationFlag->GetFlag())
-        {
-          splitter = m_SplitImplementationFlag->GetFirstParameter()->GetValue();
-        }
-
       /////////////////////////
       // parse the arguments //
       /////////////////////////
-
-        // get all filename for grow fragments
-        const storage::Vector< std::string> filenames( m_GrowFragmentsFlag->GetStringList());
-
-        // creating ShPtr of growfragments
-        util::ShPtr< chemistry::FragmentEnsemble> sp_fragment_pool( new chemistry::FragmentEnsemble);
-
-        for
-        (
-          storage::Vector< std::string>::const_iterator
-            itr( filenames.Begin()), itr_end( filenames.End());
-          itr != itr_end;
-          ++itr
-        )
-        {
-          // read in grow fragments ensemble
-          io::File::MustOpenIFStream( input, *itr);
-          sp_fragment_pool->ReadMoreFromMdl( input, sdf::e_Maintain);
-          io::File::CloseClearFStream( input);
-        }
 
       /////////////////////////////
       // Prepare rotamer library //
@@ -1026,76 +757,23 @@ namespace bcl
         threadmanager_timer.Start();
 
         // Build the molecules using metropolis monte-carlo
-        if( m_PoseDependentFlag->GetFlag())
-        {
-          ThreadManager thread_manager
-          (
-            sp_startfragment,
-            sp_fragment_pool,
-            property_scorer,
-            internal_mcm_opti,
-            mcm_opti_goal,
-            save_all_accepted_improved,
-            m_NumberMoleculesFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberIterationsFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberUnimprovedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberSkippedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_MetropolisTemperatureFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            sched::GetNumberCPUs(),
-            m_OutputFilenameFlag->GetFirstParameter()->GetValue(),
-            m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
-            m_VDWClashCutoffFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            splitter,
-            m_MaxSequentialMutatesFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_RingSwapProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_CyclizeProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_AlchemyProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_RemoveAtomProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_RemoveBondProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_AddMedChemProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_FluorinateProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_HalogenateProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_ExtendWithLinkerProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_PoseDependentFlag->GetParameterList()( 0)->GetValue(),
-            m_PoseDependentFlag->GetParameterList()( 1)->GetValue(),
-            corina_confs
-          );
-        }
-        else
-        {
-          ThreadManager thread_manager
-          (
-            sp_startfragment,
-            sp_fragment_pool,
-            property_scorer,
-            internal_mcm_opti,
-            mcm_opti_goal,
-            save_all_accepted_improved,
-            m_NumberMoleculesFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberIterationsFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberUnimprovedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_NumberSkippedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_MetropolisTemperatureFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            sched::GetNumberCPUs(),
-            m_OutputFilenameFlag->GetFirstParameter()->GetValue(),
-            m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
-            m_VDWClashCutoffFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            splitter,
-            m_MaxSequentialMutatesFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
-            m_RingSwapProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_CyclizeProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_AlchemyProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_RemoveAtomProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_RemoveBondProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_AddMedChemProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_FluorinateProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_HalogenateProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            m_ExtendWithLinkerProbFlag->GetFirstParameter()->GetNumericalValue< float>(),
-            std::string(),
-            std::string(),
-            corina_confs
-          );
-        }
+        ThreadManager thread_manager
+        (
+          sched::GetNumberCPUs(),
+          sp_startfragment,
+          m_OutputFilenameFlag->GetFirstParameter()->GetValue(),
+          mutates,
+          property_scorer,
+          final_metrics,
+          mcm_opti_goal,
+          m_NumberMoleculesFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
+          m_NumberIterationsFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
+          m_NumberUnimprovedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
+          m_NumberSkippedFlag->GetFirstParameter()->GetNumericalValue< size_t>(),
+          m_MetropolisTemperatureFlag->GetFirstParameter()->GetNumericalValue< float>(),
+          save_all_accepted_improved,
+          m_MaxSequentialMutatesFlag->GetFirstParameter()->GetNumericalValue< size_t>()
+        );
 
         // End track time
         threadmanager_timer.Stop();
@@ -1138,6 +816,110 @@ namespace bcl
 
     //! @brief standard constructor
     FocusedLibraryDesign::FocusedLibraryDesign() :
+      m_StartFragmentFlag
+      (
+        new command::FlagStatic
+        (
+          "start_fragment", "filename for input starting fragment",
+          command::Parameter
+          (
+            "fragment_filename", "filename for input sdf of molecules", ""
+          )
+        )
+      ),
+      m_OutputFilenameFlag
+      (
+        new command::FlagStatic
+        (
+          "output_filename", "flag selecting the output file name",
+          command::Parameter
+          (
+            "output_filename_param", "filename for output sdf of molecules"
+          )
+        )
+      ),
+      m_MutateFlag
+      (
+        new command::FlagDynamic
+        (
+          "mutates",
+          "methods with which to mutate molecules; "
+          "multiple mutates may be provided; the mutate performed at each iteration will be chosen at random "
+          "based on the weighted probability of each mutation.",
+          command::Parameter
+          (
+            "mutate",
+            "",
+            command::ParameterCheckSerializable
+            (
+              util::Implementation< chemistry::FragmentMutateInterface>()
+            )
+          )
+        )
+      ),
+      m_MutateProbabilityFlag
+      (
+        new command::FlagDynamic
+        (
+          "mutate_probs",
+          "relative probability of performing a mutate; the number of values passed here must "
+          "be equal to the number of mutates passed via the 'mutates' flag, otherwise "
+          "each mutate will be initialized with an equal probability.",
+          command::Parameter
+          (
+            "mutate",
+            "",
+            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max())
+          )
+        )
+      ),
+      m_MaxSequentialMutatesFlag
+      (
+        new command::FlagStatic
+        (
+          "max_sequential_mutates", "flag for the maximum number of mutates that can occur between MCM evaluations; "
+              "a number between 1 and <max_sequential_mutates> will be randomly selected with uniform probability",
+          command::Parameter
+          (
+            "max_sequential_mutates", "perform multiple mutates in a row prior to druglikeness filtering and MCM evaluation",
+            command::ParameterCheckRanged< size_t>( 1, std::numeric_limits< size_t>::max()), "1"
+          )
+        )
+      ),
+      m_PropertyScoringFunctionFlag
+      (
+        new command::FlagDynamic
+        (
+          "score_function",
+          "the scoring function to use",
+          command::Parameter
+          (
+            "function",
+            "the scoring function implementation to use",
+            command::ParameterCheckSerializable
+            (
+              chemistry::ScoreFunctionGeneric()
+            )
+          )
+        )
+      ),
+      m_FinalMetricsFlag
+      (
+        new command::FlagDynamic
+        (
+          "final_metrics",
+          "descriptors to compute on the final molecules",
+          command::Parameter
+          (
+            "descriptors",
+            "",
+            command::ParameterCheckSerializable
+            (
+              descriptor::CheminfoProperty()
+            )
+          )
+        )
+      ),
       m_NumberMoleculesFlag
       (
         new command::FlagStatic
@@ -1199,346 +981,6 @@ namespace bcl
           )
         )
       ),
-      m_PoseDependentFlag
-      (
-        new command::FlagDynamic
-        (
-          "pose_dependent_scoring", "enables pose-dependent scoring",
-          storage::Vector< command::Parameter>::Create
-          (
-            command::Parameter
-            (
-              "MDL_property",
-              "MDL property specifying the PDB filename for the receptor; "
-              "needs to match MDL property name used to train the corresponding machine learning model"
-            ),
-            command::Parameter
-            (
-              "resolve_clashes", "resolve clashes between the protein and ligand",
-              command::ParameterCheckAllowed( storage::Vector< std::string>::Create( "true", "false"))
-            )
-          )
-        )
-      ),
-      m_MaxSequentialMutatesFlag
-      (
-        new command::FlagStatic
-        (
-          "max_sequential_mutates", "flag for the maximum number of mutates that can occur between MCM evaluations; "
-              "a number between 1 and <max_sequential_mutates> will be randomly selected with uniform probability",
-          command::Parameter
-          (
-            "max_sequential_mutates", "perform multiple mutates in a row prior to druglikeness filtering and MCM evaluation",
-            command::ParameterCheckRanged< size_t>( 1, std::numeric_limits< size_t>::max()), "1"
-          )
-        )
-      ),
-      m_MutateFlag
-      (
-        new command::FlagDynamic
-        (
-          "mutates",
-          "methods with which to mutate molecules; "
-          "multiple mutates may be provided; the mutate performed at each iteration will be chosen at random "
-          "based on the weighted probability of each mutation.",
-          command::Parameter
-          (
-            "mutate",
-            "",
-            command::ParameterCheckSerializable
-            (
-              util::Implementation< chemistry::FragmentMutateInterface>()
-            )
-          )
-        )
-      ),
-      m_MutateProbabilityFlag
-      (
-        new command::FlagDynamic
-        (
-          "mutate_probs",
-          "relative probability of performing a mutate; the number of values passed here must "
-          "be equal to the number of mutates passed via the 'mutates' flag, otherwise "
-          "each mutate will be initialized with an equal probability.",
-          command::Parameter
-          (
-            "mutate",
-            "",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max())
-          )
-        )
-      ),
-      m_RingSwapProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_ringswap_prob", "flag for the relative probability of performing a ringswap mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_ringswap", "replace a single atom or whole ring with a new ring structure from an internal ring library; "
-                "substituents on the altered ring are randomly assigned a position on the new ring",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_CyclizeProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_cyclize_prob", "flag for the relative probability of performing a cyclize mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_cyclize", "connect non-ring moieties with other non-ring or ring moieties",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_AlchemyProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_alchemy_prob", "flag for the relative probability of performing an alchemy mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_alchemy", "transform one element type into another preserving charge and optimizing the bond type to the new element; "
-                "restricted to H, C, N, O, S, F, Cl, Br; "
-                "the probability of a transformation is based on the prevalence of each element type in a sample of druglike molecules",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_RemoveAtomProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_remove_atom_prob", "flag for the relative probability of performing an atom removal mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_remove_atom", "remove an atom from the molecule; if the "
-                "molecule is split into multiple fragments, keep only the largest fragment",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_RemoveBondProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_remove_bond_prob", "flag for the relative probability of performing a bond removal mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_remove_bond", "remove a bond from the molecule; preserving only the "
-                "largest fragment after the molecule is split",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_AddMedChemProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_add_medchem_prob", "flag for the relative probability of performing an add medchem group mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_add_medchem", "append medchem-like functional groups to the molecule from an internal library",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_FluorinateProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_fluorinate_prob", "flag for the relative probability of performing a fluorinate mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_fluorinate", "strips a carbon atom of any bonded hydrogen atoms and replaces them with fluorine atoms; "
-                "equal probability to strip all fluorine atoms from a carbon and replace with hydrogen atoms",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_HalogenateProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_halogenate_prob", "flag for the relative probability of performing a halogenate mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_halogenate", "add an F, Cl, Br, or I atom to an aromatic ring system; "
-                "the probability of a transformation is based on the relative prevalence of each "
-                "halogen type in a sample of druglike molecules; "
-                "F - 25%, Cl - 60%, Br - 10%, I - 5%",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_ExtendWithLinkerProbFlag
-      (
-        new command::FlagStatic
-        (
-          "mutate_extendwithlinker_prob", "flag for the relative probability of performing an extendwithlinker mutation during molecule optimization; "
-              "automatically rescaled between 0 and 1 with any other mutates",
-          command::Parameter
-          (
-            "mutate_extendwithlinker", "split current molecule into two fragments and re-connect them with a linker consisting of "
-                "either a ring, alkyl/methoxy/ethoxy chain, or single element; alternatively, beginning with a ring, create a linker"
-                " to a new ring system",
-            command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()), "0.1"
-          )
-        )
-      ),
-      m_StartFragmentFlag
-      (
-        new command::FlagStatic
-        (
-          "start_fragment", "filename for input starting fragment",
-          command::Parameter
-          (
-            "fragment_filename", "filename for input sdf of molecules", ""
-          )
-        )
-      ),
-      m_OutputFilenameFlag
-      (
-        new command::FlagStatic
-        (
-          "output_filename", "flag selecting the output file name",
-          command::Parameter
-          (
-            "output_filename_param", "filename for output sdf of molecules"
-          )
-        )
-      ),
-      m_GrowFragmentsFlag
-      (
-        new command::FlagStatic
-        (
-          "grow_fragments",
-          "files containing fragments to append to the molecule",
-          command::Parameter
-          (
-            "grow fragments filename",
-            "name of file containing grow fragments",
-            command::ParameterCheckFileExistence(),
-            chemistry::RotamerLibraryFile::GetRotamerFinder().FindFile( "") + ( "bcl_buildfrag_0.sdf.gz")
-          )
-        )
-      ),
-      m_PropertyScoringFunctionFlag
-      (
-        new command::FlagDynamic
-        (
-          "scoring_function",
-          "the scoring function to use",
-          command::Parameter
-          (
-            "function",
-            "the scoring function implementation to use",
-            command::ParameterCheckSerializable
-            (
-              chemistry::ScoreFunctionGeneric()
-            )
-          )
-        )
-      ),
-      m_DrugLikenessTypeFlag
-      (
-        new command::FlagStatic
-        (
-          "druglikeness_type",
-          "the type of druglikeness filter to use to determine when a molecule is skipped by the Monte Carlo algorithm",
-          command::Parameter
-          (
-            "type",
-            "the type of druglikeness to use",
-            command::ParameterCheckAllowed
-            (
-              storage::Vector< std::string>::Create
-              (
-                "IsConstitutionDruglike",
-                "IsConstitutionDruglikeAndHitlike",
-                "None"
-              )
-            ),
-            "IsConstitutionDruglike"
-          )
-        )
-      ),
-      m_SplitImplementationFlag
-      (
-        new command::FlagStatic
-        (
-          "split_implementation",
-          "method to split molecules if performing internal MCM optimization",
-          command::Parameter
-          (
-            "",
-            "",
-            command::ParameterCheckSerializable( util::Implementation< chemistry::FragmentSplitInterface>()),
-            "Rings"
-          )
-        )
-      ),
-      m_SimulatedAnnealingFlag
-      (
-        new command::FlagDynamic
-        (
-          "internal_mcm_simulated_annealing",
-          "Perform MCM simulated annealing (SA) optimization trials for randomly chosen or manually specified"
-          "substructures of molecule. The output from each MCM-SA trial is passed to the main MCM "
-          "engine for scoring and decision-making. Repeats until main MCM reaches termination criteria. "
-          "This is an alternative to performing general MCM optimization of the whole molecule or a single specific fragment "
-          "or set of atoms using the standard mutates with one MCM engine at a fixed temperature. In principle, it allows "
-          "the main MCM to evaluate optimized substructure changes; however, it is computationally more demanding. \n"
-          "The SA engine dynamically adjusts the temperature according to the ratio of accepted steps. It tries the match the"
-          "current ratio of accepted steps to the one calculated between given start ratio and end ratio and using the"
-          "number of steps as a linear predictor. It only tries to adjust the temperature every Nth step where N is"
-          "specified by the user. If the ratio is lower than the expected one, it increases the temperature, otherwise it"
-          "decreases the temperature. For cases where the actual ratio is close to expected ratio ( within 0.1) it"
-          "adjusts the temperature by multiplying/diving by a small coefficient, while for cases where the difference"
-          "is larger, the temperature is adjusted by multiplying/diving by a larger coefficient.",
-          storage::Vector< command::Parameter>::Create
-          (
-            command::Parameter
-            (
-              "temp_accept_start",
-              "fraction of MCM moves to be accepted initially",
-              command::ParameterCheckRanged< float>( 0.0, 1.0),
-              "0.90"
-            ),
-            command::Parameter
-            (
-              "temp_accept_end",
-              "fraction of MCM moves to be accepted by the end",
-              command::ParameterCheckRanged< float>( 0.0, 1.0),
-              "0.10"
-            ),
-            command::Parameter
-            (
-              "initial_temp",
-              "starting temperature",
-              command::ParameterCheckRanged< float>( 0.0, std::numeric_limits< float>::max()),
-              "1.0"
-            ),
-            command::Parameter
-            (
-              "steps_per_update",
-              "number of steps between ",
-              command::ParameterCheckRanged< size_t>( 1, std::numeric_limits< size_t>::max()),
-              "10"
-            )
-          )
-        )
-      ),
       m_LargerIsBetterFlag
       (
         new command::FlagStatic
@@ -1556,38 +998,6 @@ namespace bcl
           "save all molecules that are accepted or improved according to the main (outer) MCM; "
           "overall distribution of molecule scores will be skewed worse, but intermediate "
           "structures will be available for analysis"
-        )
-      ),
-      m_Corina
-      (
-        new command::FlagStatic
-        (
-          "corina",
-          "make a system call to Corina to make the starting conformer during molecule cleaning;"
-          "this means that if only 1 conformer is desired (i.e. pose-independent scoring) it will be the corina default conformer,"
-          "while if multiple conformers are desired (i.e. refinement phase of pose-dependent scoring) there will be no effect; "
-          "this option is meant primarily to allow backward compatibility for QSAR models generated with Corina conformers"
-        )
-      ),
-      m_VDWClashCutoffFlag
-      (
-        new command::FlagStatic
-        (
-          "conf_vdw_cutoff",
-          "maximum Van der Waals score of a valid 3D conformer",
-          command::Parameter
-          (
-            "vdw_score",
-            "Internal Van der Waals score of the molecule conformer normalized by the number of atoms in the molecule; "
-            "computed with MoleculeVDWScore; "
-            "note that ligand-based methods do not perform much conformer optimization (for efficiency purposes), and "
-            "may have high VDW scores even if the molecule is consistitutionally acceptable (especially if generated "
-            "with Corina). Thus, for ligand-based design tasks we recommend increasing the VDW score cutoff to at least "
-            "2.0 - 5.0, though higher can also be appropriate. For structure-based pose-dependent optimization lower "
-            "cutoff scores can be used, and this may depend on the number of iterations used for pose optimization "
-            "after the generation of each molecule.",
-            command::ParameterCheckRanged< float>( 0.0, 1000.0), "5.0"
-          )
         )
       )
     {
