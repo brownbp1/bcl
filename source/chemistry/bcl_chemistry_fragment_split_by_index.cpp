@@ -178,7 +178,8 @@ namespace bcl
       (
         "atom_indices",
         "the 0-indexed atom indices to remove from the input molecules",
-        io::Serialization::GetAgent( &m_AtomIndices)
+        io::Serialization::GetAgent( &m_AtomIndices),
+        ""
       );
       parameters.AddInitializer
       (
