@@ -22,6 +22,8 @@
 
 // includes from bcl - sorted alphabetically
 #include "bcl_chemistry_fragment_split_interface.h"
+#include "chemistry/bcl_chemistry_fragment_ensemble.h"
+#include "io/bcl_io_serializer.h"
 #include "util/bcl_util_enumerated.h"
 
 namespace bcl

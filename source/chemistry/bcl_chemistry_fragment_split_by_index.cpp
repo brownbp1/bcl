@@ -86,13 +86,6 @@ namespace bcl
       return GetStaticClassName( *this);
     }
 
-    //! @brief gets the minimum size of fragments
-    //! @return the minimum size of fragments
-    const size_t FragmentSplitByIndex::GetMinSize() const
-    {
-      return 0;
-    }
-
   /////////////////
   //  operations //
   /////////////////
