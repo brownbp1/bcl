@@ -765,11 +765,11 @@ namespace bcl
        static chemistry::FragmentMapConformer cleaner;
        if( m_CorinaFlag->GetFlag())
        {
-         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty("Constant(1.0)"), true);
+         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty( "Constant(1.0)"), true);
        }
        else
        {
-         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty("Constant(1.0)"), false);
+         cleaner = chemistry::FragmentMapConformer( descriptor::CheminfoProperty( "Constant(1.0)"), false);
        }
        util::ShPtr< chemistry::FragmentComplete> clean_frag( cleaner.Clean
          (

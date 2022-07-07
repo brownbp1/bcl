@@ -34,12 +34,12 @@ BCL_StaticInitializationFiascoFinder
 #include "chemistry/bcl_chemistry_hydrogens_handler.h"
 #include "chemistry/bcl_chemistry_molecule_fragment_recombination.h"
 #include "chemistry/bcl_chemistry_stereocenters_handler.h"
-#include "graph/bcl_graph_subgraph_isomorphism.h"
 #include "graph/bcl_graph_connectivity.h"
 #include "graph/bcl_graph_subgraph.h"
+#include "graph/bcl_graph_subgraph_isomorphism.h"
 #include "io/bcl_io_directory_entry.h"
-#include "io/bcl_io_ofstream.h"
 #include "io/bcl_io_file.h"
+#include "io/bcl_io_ofstream.h"
 #include "math/bcl_math_running_average.h"
 #include "sched/bcl_sched_scheduler_interface.h"
 #include "sched/bcl_sched_thunk_job.h"
@@ -644,8 +644,8 @@ namespace bcl
         }
 
         // clean the new molecule
-        FragmentMapConformer cleaner( descriptor::CheminfoProperty("Constant(1.0)"), false, storage::Vector< size_t>( conf_moveable_indices.Begin(), conf_moveable_indices.End()));
-        util::ShPtr< FragmentComplete> new_mol( cleaner.Clean( new_mol_vec, BASE_MOL_A, descriptor::CheminfoProperty("Constant(1.0)"), false));
+        FragmentMapConformer cleaner( descriptor::CheminfoProperty( "Constant(1.0)"), false, storage::Vector< size_t>( conf_moveable_indices.Begin(), conf_moveable_indices.End()));
+        util::ShPtr< FragmentComplete> new_mol( cleaner.Clean( new_mol_vec, BASE_MOL_A, descriptor::CheminfoProperty( "Constant(1.0)"), false));
         if( new_mol.IsDefined())
         {
           return *new_mol;

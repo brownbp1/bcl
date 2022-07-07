@@ -715,7 +715,7 @@ namespace bcl
         {
           mutate_probs = storage::Vector< float>( mutate_input.GetSize(), 1.0);
         }
-        Mutates mutates( new math::MutateDecisionNode< chemistry::FragmentComplete>() );
+        Mutates mutates( new math::MutateDecisionNode< chemistry::FragmentComplete>());
         for
         (
             size_t mutate_i( 0), mutate_sz( mutate_input.GetSize());

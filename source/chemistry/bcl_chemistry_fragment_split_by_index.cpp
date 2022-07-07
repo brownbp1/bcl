@@ -23,6 +23,8 @@ BCL_StaticInitializationFiascoFinder
 #include "chemistry/bcl_chemistry_fragment_complete.h"
 #include "chemistry/bcl_chemistry_fragment_split_isolate.h"
 #include "io/bcl_io_file.h"
+#include "util/bcl_util_binary_function_stl_wrapper.h"
+#include "util/bcl_util_si_ptr.h"
 
 // external includes - sorted alphabetically
 
@@ -84,6 +86,12 @@ namespace bcl
     const std::string &FragmentSplitByIndex::GetClassDescription() const
     {
       return GetStaticClassName( *this);
+    }
+
+    //! @return the minimum size of fragments
+    const size_t FragmentSplitByIndex::GetMinSize() const
+    {
+      return 0;
     }
 
   /////////////////
@@ -153,7 +161,7 @@ namespace bcl
         return true;
       }
 
-      BCL_MessageStd("No atom indices provided! Exiting without splitting molecules.");
+      BCL_MessageStd( "No atom indices provided! Exiting without splitting molecules.");
       return false;
     }
 

@@ -21,8 +21,8 @@
 // include other forward headers - sorted alphabetically
 
 // includes from bcl - sorted alphabetically
+#include "bcl_chemistry_fragment_ensemble.h"
 #include "bcl_chemistry_fragment_split_interface.h"
-#include "chemistry/bcl_chemistry_fragment_ensemble.h"
 #include "io/bcl_io_serializer.h"
 #include "util/bcl_util_enumerated.h"
 
@@ -96,6 +96,9 @@ namespace bcl
       //! @brief Get a description for what this class does (used when writing help)
       //! @return a description for what this class does (used when writing help)
       const std::string &GetClassDescription() const;
+
+      //! @return the minimum size of fragments
+      const size_t GetMinSize() const;
 
     ////////////////
     // operations //
