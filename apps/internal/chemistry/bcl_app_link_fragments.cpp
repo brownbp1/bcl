@@ -258,7 +258,7 @@ namespace bcl
           command::Parameter
           (
             "type", "the type of druglikenes to use",
-            command::ParameterCheckAllowed( storage::Vector< std::string>::Create( "IsConstitutionDruglike", "IsConstitutionDruglikeAndHitlike", "None")),
+            command::ParameterCheckAllowed( storage::Vector< std::string>::Create( "IsConstitutionDruglike", "IsConstitutionDruglikeAndHitlike", "Constant(1.0)")),
             "IsConstitutionDruglike"
           )
         )
@@ -1526,7 +1526,7 @@ namespace bcl
        (
          cleaner.Clean
          (
-           new_frag_v, REFERENCE, m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()
+           new_frag_v, REFERENCE, descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue())
          )
        );
        return clean_frag;
@@ -1561,7 +1561,7 @@ namespace bcl
        );
        static chemistry::FragmentMapConformer conf_mapper
        (
-         m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue(),
+         descriptor::CheminfoProperty( m_DrugLikenessTypeFlag->GetFirstParameter()->GetValue()),
          m_MDLString,
          m_PocketFilename,
          SCORER,
