@@ -541,7 +541,7 @@ namespace bcl
                 chemistry::ConformationComparisonPsiFlexField::GetNonMaskedAtoms
                 (
                   ensemble.GetMolecules().FirstElement(),
-                  scaffold,
+                  scaffold.GetMolecules().FirstElement(),
                   m_WorkerMolAlign.GetExclusionIndicesA(),
                   m_WorkerMolAlign.GetExclusionIndicesB(),
                   keep_indices_a,
