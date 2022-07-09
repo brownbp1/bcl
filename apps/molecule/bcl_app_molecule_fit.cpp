@@ -537,6 +537,19 @@ namespace bcl
                 // cast scaffold to FragmentEnsemble
                 chemistry::FragmentEnsemble scaffold( storage::List< chemistry::FragmentComplete>( size_t( 1), SCAFFOLDS( scaffold_index)));
 
+                storage::Vector< size_t> keep_indices_a, keep_indices_b;
+                chemistry::ConformationComparisonPsiFlexField::GetNonMaskedAtoms
+                (
+                  ensemble.GetMolecules().FirstElement(),
+                  scaffold,
+                  m_WorkerMolAlign.GetExclusionIndicesA(),
+                  m_WorkerMolAlign.GetExclusionIndicesB(),
+                  keep_indices_a,
+                  keep_indices_b
+                );
+                m_WorkerMolAlign.SetKeepIndicesA( keep_indices_a);
+                m_WorkerMolAlign.SetKeepIndicesB( keep_indices_b);
+
                 // for each molecule-scaffold pair, we generate multiple solutions
                 BCL_MessageStd( "Aligning molecule to scaffold: " + util::Format()( scaffold_index) + " (0-indexed)");
                 storage::Vector< storage::Triplet< chemistry::FragmentComplete, chemistry::FragmentComplete, double> > aligned_mols
@@ -1665,7 +1678,9 @@ namespace bcl
             "number_outputs=1,"
             "align_to_scaffold=0,"
             "initial_rand_rotation=0,"
-      "exclusion_indices_a="",exclusion_indices_b="",pose_tolerance=0.125,"
+            "exclusion_indices_a="","
+            "exclusion_indices_b="","
+            "pose_tolerance=0.125,"
             "pose_score_threshold=2,"
             "flip_prob=0.06,"
             "big_rot_prob=0.06,"
