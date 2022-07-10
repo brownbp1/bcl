@@ -189,6 +189,8 @@ namespace bcl
       const ConformationInterface &MOLECULE_B
     ) const
     {
+
+      // TODO: there needs to be a catch for this in FieldOptimizeOrientationFlex
       storage::Vector< size_t> keep_indices_a, keep_indices_b;
       GetNonMaskedAtoms( MOLECULE_A, MOLECULE_B, m_ExclusionIndicesA, m_ExclusionIndicesB, keep_indices_a, keep_indices_b);
       m_KeepIndicesA = keep_indices_a;

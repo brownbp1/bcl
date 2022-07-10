@@ -254,6 +254,7 @@ namespace bcl
                 }
 
                 // add fit molecules to molecule vector and increment index
+                BCL_MessageStd( "Completed molecule fitting procedure. Saving repositioned molecule.");
                 m_ThreadManager->m_Mutex.Lock();
                 if( m_CurrentWorkerMolIndex < m_ThreadManager->GetNumberMoleculesToFit())
                 {
@@ -342,12 +343,14 @@ namespace bcl
               chemistry::FragmentEnsemble final_poses;
 
               // Perform property-bases small molecule alignment
+              BCL_MessageStd("Run small molecule property-based alignment!");
               storage::Vector< // indexes scaffold
               storage::Vector< // indexes alignment solution
                 storage::Triplet< chemistry::FragmentComplete, chemistry::FragmentComplete, double // single alignment result
                 > > > aligned_mols( PropertyBasedAlignment( MOLECULE, SCAFFOLDS));
 
               // Find the best alignment
+              BCL_MessageStd("Find best alignment...");
               float min_rmsdx( math::GetHighestBoundedValue< float>());
               for
               (
@@ -356,6 +359,7 @@ namespace bcl
                   ++scaffold_index
               )
               {
+                BCL_MessageStd("A");
                 // go over each alignment solution per scaffold
                 for
                 (
@@ -365,13 +369,17 @@ namespace bcl
                 )
                 {
                   // make a reference to our mol to shorthand this
-                  chemistry::FragmentComplete &mol( aligned_mols( scaffold_index)( alignment_index).First());
-                  float mol_rmsdx( mol.GetStoredProperties().GetMDLPropertyAsVector( "RMSDX")( 0));
+                  BCL_MessageStd("B");
+                  const chemistry::FragmentComplete &mol( aligned_mols( scaffold_index)( alignment_index).First());
+                  BCL_MessageStd("C");
+                  const float &mol_rmsdx( aligned_mols( scaffold_index)( alignment_index).Third());
+                  BCL_MessageStd("RMSDX to scaffold #" + util::Format()( scaffold_index) + " is " + util::Format()( mol_rmsdx));
 
                   // save the best alignment
                   if( mol_rmsdx < min_rmsdx)
                   {
                     min_rmsdx = mol_rmsdx;
+                    BCL_MessageStd("New best RMSDX: " + util::Format()( min_rmsdx));
                     MOLECULE = mol;
                   }
                 } // end current alignment solution

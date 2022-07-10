@@ -85,7 +85,20 @@ namespace bcl
         new command::FlagStatic
         (
           "accumulate",
-          "accumulate mutations into one molecule; be careful"
+          "accumulate mutations at specified 'mutable_atoms' into one molecule; "
+          "only applicable if using the application-level 'mutable_atoms'; "
+          "similar behavior can be achieved using multiple implementations sequentially "
+          "with careful mutate-level atom selections."
+        )
+      ),
+      m_FinalProductOnlyFlag
+      (
+        new command::FlagStatic
+        (
+          "final_product_only",
+          "only return the product resulting from all mutates; by default a "
+          "molecule is returned after each mutation; this flag is useful if you "
+          "are only interested in the final product."
         )
       ),
       m_RecenterFlag
@@ -117,6 +130,7 @@ namespace bcl
     MoleculeMutate::MoleculeMutate( const MoleculeMutate &PARENT) :
           m_ImplementationFlag( PARENT.m_ImplementationFlag),
           m_AccumulateFlag( PARENT.m_AccumulateFlag),
+          m_FinalProductOnlyFlag( PARENT.m_FinalProductOnlyFlag),
           m_MutableAtomsFlag( PARENT.m_MutableAtomsFlag),
           m_RecenterFlag( PARENT.m_RecenterFlag),
           m_OutputFilenameFlag( PARENT.m_OutputFilenameFlag),
@@ -174,6 +188,9 @@ namespace bcl
 
       //! make all mutations to one molecule
       sp_cmd->AddFlag( m_AccumulateFlag);
+
+      //! only return the last molecule after all mutations have been applied
+      sp_cmd->AddFlag( m_FinalProductOnlyFlag);
 
       //! whether to recenter the molecules
       sp_cmd->AddFlag( m_RecenterFlag);
@@ -297,8 +314,15 @@ namespace bcl
                   current_frag = *( mutated_object.GetArgument());
                   continue;
                 }
-                chemistry::FragmentComplete fragment( *( mutated_object.GetArgument()));
-                Write( fragment);
+                if
+                (
+                    !m_FinalProductOnlyFlag->GetFlag() ||
+                    i+1 == n_mutates
+                )
+                {
+                  chemistry::FragmentComplete fragment( *( mutated_object.GetArgument()));
+                  Write( fragment);
+                }
               }
             }
           }
@@ -324,8 +348,15 @@ namespace bcl
             if( mutated_object.GetArgument().IsDefined())
             {
               current_frag = *( mutated_object.GetArgument());
-              chemistry::FragmentComplete fragment( *( mutated_object.GetArgument()));
-              Write( fragment);
+              if
+              (
+                  !m_FinalProductOnlyFlag->GetFlag() ||
+                  i+1 == n_mutates
+              )
+              {
+                chemistry::FragmentComplete fragment( *( mutated_object.GetArgument()));
+                Write( fragment);
+              }
             }
           }
         }

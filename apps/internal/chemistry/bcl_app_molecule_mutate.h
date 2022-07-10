@@ -68,6 +68,9 @@ namespace bcl
       //! accumulate all mutations onto a single molecule
       util::ShPtr< command::FlagInterface> m_AccumulateFlag;
 
+      //! only return the last molecule after all mutations have been applied
+      util::ShPtr< command::FlagInterface> m_FinalProductOnlyFlag;
+
       //! whether to recenter the molecules
       util::ShPtr< command::FlagInterface> m_RecenterFlag;
 
