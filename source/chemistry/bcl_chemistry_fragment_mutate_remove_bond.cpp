@@ -364,11 +364,11 @@ namespace bcl
         HydrogensHandler::Remove( atom_vector);
         if( m_ScaffoldFragment.GetSize())
         {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType), *this);
+          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit), *this);
         }
         else
         {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType), *this);
+          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit), *this);
         }
       }
       // failed all tries; return null

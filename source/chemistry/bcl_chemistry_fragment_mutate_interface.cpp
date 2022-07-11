@@ -767,6 +767,32 @@ namespace bcl
 
       parameters.AddInitializer
       (
+        "skip_neutralization",
+        "if true, do not neutralize the molecule after applying a mutate",
+        io::Serialization::GetAgent( &m_SkipNeutralization),
+        "true"
+      );
+
+      parameters.AddInitializer
+      (
+        "skip_saturation",
+        "if true, do not saturate hydrogen atoms on open valences after applying a mutate",
+        io::Serialization::GetAgent( &m_SkipSaturateH),
+        "false"
+      );
+
+      parameters.AddInitializer
+      (
+        "skip_split",
+        "if true and the applied mutate separates a molecule into multiple disconnected fragments, "
+        "do not remove the smaller fragments; note that by default we keep only the largest fragment; "
+        "note also that if you choose to keep disconnected fragments then conformer sampling will not work.",
+        io::Serialization::GetAgent( &m_SkipSplit),
+        "false"
+      );
+
+      parameters.AddInitializer
+      (
         "corina",
         "optionally generate a 3D conformer with Corina instead of BCL::Conf"
         "only a valid option for users with the Corina program installed; "

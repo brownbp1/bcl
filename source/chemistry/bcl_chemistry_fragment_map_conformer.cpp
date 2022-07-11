@@ -201,13 +201,15 @@ namespace bcl
       const AtomVector< AtomComplete> &ATOM_VEC,
       const FragmentComplete &REFERENCE_MOL,
       const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
-      const bool &SKIP_NEUT
+      const bool SKIP_NEUT,
+      const bool SKIP_SATURATE_H,
+      const bool SKIP_SPLIT
     ) const
     {
       // clean atoms
       AtomVector< AtomComplete> new_mol_atoms_noh
       (
-        CleanAtoms( ATOM_VEC, DRUG_LIKENESS_TYPE, SKIP_NEUT)
+        CleanAtoms( ATOM_VEC, DRUG_LIKENESS_TYPE, SKIP_NEUT,SKIP_SATURATE_H, SKIP_SPLIT)
       );
 
       // exit if we failed the atom cleaning
@@ -417,7 +419,7 @@ namespace bcl
       }
 
       // check if defined with atoms and reasonable geometry
-      if( gen_mol_3d_sp.IsDefined() && gen_mol_3d_sp->GetSize() && !gen_mol_3d_sp->HasBadGeometry())
+      if( gen_mol_3d_sp.IsDefined() && gen_mol_3d_sp->GetSize() && ( !gen_mol_3d_sp->HasBadGeometry() || SKIP_SPLIT ))
       {
         bool good_conf( true);
         // filter molecules with strained 3D conformers
@@ -452,9 +454,9 @@ namespace bcl
       {
         BCL_MessageStd( "Molecule cleaning failed to generate a valid 3D conformer!")
         BCL_MessageStd( "Defined: " + util::Format()( gen_mol_3d_sp.IsDefined() ? "true" : "false"));
-        BCL_MessageStd("Has good geometry: " + util::Format()( gen_mol_3d_sp->HasBadGeometry() ? "false" : "true" ));
-        BCL_MessageStd("Final molecule size: " + util::Format()( gen_mol_3d_sp->GetSize()));
-        BCL_MessageStd("Returning null...")
+        BCL_MessageStd( "Has good geometry: " + util::Format()( gen_mol_3d_sp->HasBadGeometry() ? "false" : "true" ));
+        BCL_MessageStd( "Final molecule size: " + util::Format()( gen_mol_3d_sp->GetSize()));
+        BCL_MessageStd( "Returning null...")
       }
       return util::ShPtr< FragmentComplete>();
     }
@@ -467,8 +469,9 @@ namespace bcl
     (
       const AtomVector< AtomComplete> &ATOM_VEC,
       const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE,
-      const bool &SKIP_NEUT,
-      const bool &SKIP_SATURATE_H
+      const bool SKIP_NEUT,
+      const bool SKIP_SATURATE_H,
+      const bool SKIP_SPLIT
     ) const
     {
       // make sure we have atoms
@@ -505,9 +508,16 @@ namespace bcl
           return AtomVector< AtomComplete>();
         }
       }
-      FragmentSplitLargestComponent splitter;
-      FragmentEnsemble largest_component( splitter( new_mol));
-      new_mol = largest_component.GetMolecules().FirstElement();
+
+      // remove smaller fragments from a complex (split) molecule
+      if( !SKIP_SPLIT)
+      {
+        FragmentSplitLargestComponent splitter;
+        FragmentEnsemble largest_component( splitter( new_mol));
+        new_mol = largest_component.GetMolecules().FirstElement();
+      }
+
+      // add hydrogen atoms
       if( !SKIP_SATURATE_H)
       {
         new_mol.SaturateWithH();

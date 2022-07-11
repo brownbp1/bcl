@@ -85,14 +85,6 @@ namespace bcl
       //! This also defines the probability of removing a ring entirely
       double m_RingInitiationProbability;
 
-      //! Try to fix the conformation after the ring swap (bond angles and lengths only. Dihedrals are not preserved)
-      //! This is *very* slow and not recommended if you're only using 2d descriptors
-      bool m_FixGeometry;
-
-      //! Neutralize the molecule after ring swap
-      //! Recommended unless explicitly using a model trained on formally charged molecules
-      bool m_Neutralize;
-
       //! if true, at most one ring may change size. For an additional ring to be added to the system then, all other
       //! rings must have the same size
       bool m_RestrictToNoMoreThanOneRingSizeChange;
@@ -102,12 +94,6 @@ namespace bcl
 
       //! if true, align new ring to current ring prior to substitution to preserve topological distances between substituents as best as possible
       bool m_AlignRings;
-
-      //! extend atoms included in conformational sampling this many bonds out from any perturbed atom
-      size_t m_ExtendAdjacentAtoms;
-
-      //! perform a quick substructure-based ensemble align and choose best conformer based on ChargeRMSD
-      bool m_ChooseBestAlignedConf;
 
       //! Scheme used for comparing whether two bonds are equivalent
       ConfigurationalBondTypeData::DataEnum m_BondComparisonType;

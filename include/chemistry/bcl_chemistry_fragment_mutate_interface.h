@@ -97,6 +97,25 @@ namespace bcl
       //! reverse the direction of valence opening such that higher index hydrogen atoms are removed first
       bool m_OVReverse = false;
 
+      //! do not neutralize the molecule after making a change
+      bool m_SkipNeutralization = true;
+
+      //! do not saturate with hydrogen atoms after making a change
+      bool m_SkipSaturateH = false;
+
+      //! do not split small fragments from a complex (split) molecule after a change
+      bool m_SkipSplit = false;
+
+      //! Add atoms with bad geometry to the atoms that can be sampled for conformer generation
+      //! after the mutate is applied
+      bool m_FixGeometry;
+
+      //! extend atoms included in conformational sampling this many bonds out from any perturbed atom
+      size_t m_ExtendAdjacentAtoms;
+
+      //! perform a quick substructure-based ensemble align and choose best conformer based on ChargeRMSD
+      bool m_ChooseBestAlignedConf;
+
       //! reference molecule for substructure-based alignment during 3D conformer construction
       FragmentComplete m_ScaffoldFragment = FragmentComplete();
       std::string m_ScaffoldFragmentFilename;

@@ -192,8 +192,9 @@ namespace bcl
       (
         const AtomVector< AtomComplete> &ATOM_VEC,
         const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE = descriptor::CheminfoProperty( "Constant(1.0)"),
-        const bool &SKIP_NEUT = true,
-        const bool &SKIP_SATURATE_H = false
+        const bool SKIP_NEUT = true,
+        const bool SKIP_SATURATE_H = false,
+        const bool SKIP_SPLIT = false
       ) const;
 
       //! @brief virtual operator taking an fragment and generating a new fragment by growing on a valence
@@ -206,7 +207,9 @@ namespace bcl
         const AtomVector< AtomComplete> &ATOM_VEC,
         const FragmentComplete &REFERENCE_MOL,
         const descriptor::CheminfoProperty &DRUG_LIKENESS_TYPE = descriptor::CheminfoProperty( "Constant(1.0)"),
-        const bool &SKIP_NEUT = true
+        const bool SKIP_NEUT = true,
+        const bool SKIP_SATURATE_H = false,
+        const bool SKIP_SPLIT = false
       ) const;
 
       //! @brief preserve conformational information from starting molecule in new molecule
