@@ -89,7 +89,7 @@ namespace bcl
       bool m_Corina = false;
 
       //! max number of tries for a single mutate
-      size_t m_NumberMaxAttempts = 10;
+      size_t m_NumberMaxAttempts = size_t( 10);
 
       //! shuffle hydrogen atoms bonded to a target heavy atom prior to removal for opening valences
       bool m_OVShuffleH = true;
@@ -106,15 +106,21 @@ namespace bcl
       //! do not split small fragments from a complex (split) molecule after a change
       bool m_SkipSplit = false;
 
-      //! Add atoms with bad geometry to the atoms that can be sampled for conformer generation
+      //! add atoms with bad geometry to the atoms that can be sampled for conformer generation
       //! after the mutate is applied
-      bool m_FixGeometry;
+      bool m_FixGeometry = true;
 
       //! extend atoms included in conformational sampling this many bonds out from any perturbed atom
-      size_t m_ExtendAdjacentAtoms;
+      size_t m_ExtendAdjacentAtoms = size_t( 1);
 
-      //! perform a quick substructure-based ensemble align and choose best conformer based on ChargeRMSD
-      bool m_ChooseBestAlignedConf;
+      //! add atoms in a shared ring with the perturbed atom(s) to the list of moveable atoms during
+      //! 3D conformer generation; generally recommended for aromatic systems, but may or may not
+      //! be needed for nonconjugated ring systems
+      bool m_ExtendRingAtoms = true;
+
+      //! perform a quick substructure-based ensemble align and choose best conformer based on ChargeRMSD;
+      //! generally only worthwhile for ringswaps that occur in the middle of a molecule
+      bool m_ChooseBestAlignedConf = false;
 
       //! reference molecule for substructure-based alignment during 3D conformer construction
       FragmentComplete m_ScaffoldFragment = FragmentComplete();

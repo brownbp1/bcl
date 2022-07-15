@@ -449,7 +449,12 @@ namespace bcl
         m_PropertyScorer,
         m_ResolveClashes,
         m_BFactors,
-        m_Corina
+        m_Corina,
+        storage::Vector< size_t>(),
+        m_ChooseBestAlignedConf,
+        m_FixGeometry,
+        m_ExtendAdjacentAtoms,
+        m_ExtendRingAtoms
       );
 
       // Remove hydrogen atoms before clean to allow proper bondtype selection
@@ -459,8 +464,8 @@ namespace bcl
       util::ShPtr< FragmentComplete> new_mol_ptr
       (
         m_ScaffoldFragment.GetSize()
-         ? cleaner.Clean( not_empty, m_ScaffoldFragment, m_DrugLikenessType)
-         : cleaner.Clean( not_empty, FRAGMENT, m_DrugLikenessType)
+         ? cleaner.Clean( not_empty, m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit)
+         : cleaner.Clean( not_empty, FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit)
       );
 
       if( !new_mol_ptr.IsDefined() || new_mol_ptr->HasNonGasteigerAtomTypes())
@@ -469,10 +474,10 @@ namespace bcl
       }
 
       // split out rings
-      FragmentSplitRings ring_splitter( true, 4);
-      FragmentEnsemble split_rings( ring_splitter( *new_mol_ptr));
-
-      // make sure all rings are found in the ring dataset
+//      FragmentSplitRings ring_splitter( true, 4);
+//      FragmentEnsemble split_rings( ring_splitter( *new_mol_ptr));
+//
+//      // make sure all rings are found in the ring dataset
 //      for
 //      (
 //          FragmentEnsemble::iterator split_rings_itr( split_rings.Begin()), split_rings_itr_end( split_rings.End());

@@ -20,9 +20,6 @@ BCL_StaticInitializationFiascoFinder
 #include "chemistry/bcl_chemistry_fragment_mutate_remove_atom.h"
 
 // includes from bcl - sorted alphabetically
-#include "iostream"
-#include "iterator"
-#include "vector"
 #include "chemistry/bcl_chemistry_atoms_complete_standardizer.h"
 #include "chemistry/bcl_chemistry_fragment_map_conformer.h"
 #include "chemistry/bcl_chemistry_fragment_split_largest_component.h"
@@ -33,7 +30,11 @@ BCL_StaticInitializationFiascoFinder
 #include "io/bcl_io_file.h"
 #include "io/bcl_io_ifstream.h"
 #include "random/bcl_random_uniform_distribution.h"
+
 // external includes - sorted alphabetically
+#include <iostream>
+#include <iterator>
+#include <vector>
 
 namespace bcl
 {
@@ -191,6 +192,13 @@ namespace bcl
     {
       BCL_MessageStd( "RemoveAtom!");
 
+      // these two options are incompatible if enabled simultaneously
+      if( ( m_RestrictToBondedHeavy == m_RestrictToBondedH) == true)
+      {
+        BCL_MessageStd( "Cannot simultaneously restrict atom selection to heavy atoms and hydrogen atoms; returning NULL");
+        return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
+      }
+
       // pick an atom to remove
       util::SiPtr< const AtomConformationalInterface> picked_atom;
       if( m_MutableAtomIndices.GetSize() || m_MutableElements.GetSize() || m_MutableFragments.GetSize())
@@ -202,15 +210,57 @@ namespace bcl
         picked_atom = this->PickAtom( FRAGMENT, true);
       }
 
-//      // if atom is hydrogen atom, grab the atom to which it is connected
-//      if( picked_atom->GetElementType() == GetElementTypes().e_Hydrogen)
-//      {
-//        if( !picked_atom->GetBonds().GetSize())
-//        {
-//          continue;
-//        }
-//        picked_atom = util::SiPtr<const AtomConformationalInterface>( picked_atom->GetBonds().Begin()->GetTargetAtom());
-//      }
+      // if atom is hydrogen atom, grab the atom to which it is connected
+      if( picked_atom->GetElementType() == GetElementTypes().e_Hydrogen && m_RestrictToBondedHeavy)
+      {
+        if( !picked_atom->GetBonds().GetSize())
+        {
+          BCL_MessageStd
+          (
+            "Hydrogen atom selected and restrict to bonded heavy atoms is enabled. "
+            "However, no bonded heavy atom is found. Returning NULL."
+          );
+          return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
+        }
+        picked_atom = util::SiPtr<const AtomConformationalInterface>( picked_atom->GetBonds().Begin()->GetTargetAtom());
+      }
+
+      // if restricted to hydrogen atoms get the new picked atom
+      else if( m_RestrictToBondedH && picked_atom->GetElementType() != GetElementTypes().e_Hydrogen)
+      {
+        // loop over bonds and find the hydrogen atom indices
+        storage::Vector< size_t> h_indices;
+        for
+        (
+            auto bond_itr( picked_atom->GetBonds().Begin()),
+            bond_itr_end( picked_atom->GetBonds().End());
+            bond_itr != bond_itr_end;
+            ++bond_itr
+        )
+        {
+          if( bond_itr->GetTargetAtom().GetElementType() == GetElementTypes().e_Hydrogen)
+          {
+            h_indices.PushBack( FRAGMENT.GetAtomVector().GetAtomIndex( bond_itr->GetTargetAtom()));
+          }
+        }
+
+        // require some hydrogen atoms that can be mutated
+        if( !h_indices.GetSize())
+        {
+          BCL_MessageStd
+          (
+            "Heavy atom selected and restrict to bonded hydrogen atom is enabled. "
+            "However, no bonded hydrogen atom is found. Returning NULL."
+          );
+          return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
+        }
+        // set new picked atom
+        else if( h_indices.GetSize() > size_t( 1))
+        {
+          h_indices.Shuffle();
+        }
+        picked_atom = util::SiPtr< const AtomConformationalInterface>( FRAGMENT.GetAtomVector()( h_indices( 0)));
+      }
 
       // removal atom index
       size_t picked_atom_index( FRAGMENT.GetAtomVector().GetAtomIndex( *picked_atom));
@@ -232,22 +282,34 @@ namespace bcl
         m_PropertyScorer,
         m_ResolveClashes,
         m_BFactors,
-        m_Corina
+        m_Corina,
+        storage::Vector< size_t>(),
+        m_ChooseBestAlignedConf,
+        m_FixGeometry,
+        m_ExtendAdjacentAtoms,
+        m_ExtendRingAtoms
       );
 
       // standardize and return
       HydrogensHandler::Remove( atoms);
-      if( m_ScaffoldFragment.GetSize())
-      {
-        return math::MutateResult< FragmentComplete>( cleaner.Clean( atoms, m_ScaffoldFragment, m_DrugLikenessType), *this);
-      }
-      else
-      {
-        return math::MutateResult< FragmentComplete>( cleaner.Clean( atoms, FRAGMENT, m_DrugLikenessType), *this);
-      }
+      return math::MutateResult< FragmentComplete>
+      (
+        cleaner.Clean
+        (
+          atoms,
+          m_ScaffoldFragment.GetSize() ? m_ScaffoldFragment : FRAGMENT,
+          m_DrugLikenessType,
+          m_SkipNeutralization,
+          m_SkipSaturateH,
+          m_SkipSplit
+        ),
+        *this
+      );
 
       // TODO: consider adding a step to have a certain probability of closing the gap created by this atom removal
 
+      // failed all tries; return null
+      return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
     }
 
   ////////////////

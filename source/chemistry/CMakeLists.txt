@@ -114,6 +114,7 @@ SET(
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_mutate_ring_swap.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_probability_score.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_react.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_split_by_index.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_split_common_substructure.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_split_conformations.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bcl_chemistry_fragment_split_ecfp_fragments.cpp

@@ -219,7 +219,12 @@ namespace bcl
         m_PropertyScorer,
         m_ResolveClashes,
         m_BFactors,
-        m_Corina
+        m_Corina,
+        storage::Vector< size_t>(),
+        m_ChooseBestAlignedConf,
+        m_FixGeometry,
+        m_ExtendAdjacentAtoms,
+        m_ExtendRingAtoms
       );
 
       // make equal probability to add or remove fluorine atoms
@@ -307,8 +312,8 @@ namespace bcl
             util::ShPtr< FragmentComplete> new_mol_ptr
             (
               m_ScaffoldFragment.GetSize() ?
-              cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType) :
-              cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType)
+              cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit) :
+              cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit)
             );
             if( !new_mol_ptr.IsDefined())
             {
@@ -372,8 +377,8 @@ namespace bcl
             util::ShPtr< FragmentComplete> new_mol_ptr
             (
               m_ScaffoldFragment.GetSize() ?
-              cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType) :
-              cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType)
+              cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit) :
+              cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit)
             );
             if( !new_mol_ptr.IsDefined())
             {

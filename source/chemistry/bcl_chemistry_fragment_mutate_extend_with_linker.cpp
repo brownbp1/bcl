@@ -665,28 +665,47 @@ namespace bcl
         m_PropertyScorer,
         m_ResolveClashes,
         m_BFactors,
-        m_Corina
+        m_Corina,
+        storage::Vector< size_t>(),
+        m_ChooseBestAlignedConf,
+        m_FixGeometry,
+        m_ExtendAdjacentAtoms,
+        m_ExtendRingAtoms
       );
 
       // Remove hydrogen atoms before clean to allow proper bondtype selection
       AtomVector< AtomComplete> not_empty( new_mol.GetAtomVector());
       HydrogensHandler::Remove( not_empty);
-
-      // Check for valid atom types
-      util::ShPtr< FragmentComplete> new_mol_ptr
+      return math::MutateResult< FragmentComplete>
       (
-        m_ScaffoldFragment.GetSize()
-        ? cleaner.Clean( not_empty, m_ScaffoldFragment, m_DrugLikenessType)
-            : cleaner.Clean( not_empty, FRAGMENT, m_DrugLikenessType)
+        cleaner.Clean
+        (
+          not_empty,
+          m_ScaffoldFragment.GetSize() ? m_ScaffoldFragment : FRAGMENT,
+          m_DrugLikenessType,
+          m_SkipNeutralization,
+          m_SkipSaturateH,
+          m_SkipSplit
+        ),
+        *this
       );
-
-      if( !new_mol_ptr.IsDefined() || new_mol_ptr->HasNonGasteigerAtomTypes())
-      {
-        return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
-      }
-
-      // return the new molecule
-      return math::MutateResult< FragmentComplete>( new_mol_ptr, *this);
+      return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
+//
+//      // Check for valid atom types
+//      util::ShPtr< FragmentComplete> new_mol_ptr
+//      (
+//        m_ScaffoldFragment.GetSize()
+//        ? cleaner.Clean( not_empty, m_ScaffoldFragment, m_DrugLikenessType)
+//            : cleaner.Clean( not_empty, FRAGMENT, m_DrugLikenessType)
+//      );
+//
+//      if( !new_mol_ptr.IsDefined() || new_mol_ptr->HasNonGasteigerAtomTypes())
+//      {
+//        return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
+//      }
+//
+//      // return the new molecule
+//      return math::MutateResult< FragmentComplete>( new_mol_ptr, *this);
     }
 
   ////////////////

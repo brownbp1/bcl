@@ -493,27 +493,32 @@ namespace bcl
           m_PropertyScorer,
           m_ResolveClashes,
           m_BFactors,
-          m_Corina
-//          storage::Vector< size_t>(),
-//          false,
-//          false,
-//          4
+          m_Corina,
+          storage::Vector< size_t>(),
+          m_ChooseBestAlignedConf,
+          m_FixGeometry,
+          m_ExtendAdjacentAtoms,
+          m_ExtendRingAtoms
         );
 
         // remove hydrogen atoms to ease burden on the isomorphism search during cleaning
         HydrogensHandler::Remove( new_atom_vector);
 
         // Standardize and return
-        if( m_ScaffoldFragment.GetSize())
-        {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( new_atom_vector, m_ScaffoldFragment, m_DrugLikenessType), *this);
-        }
-        else
-        {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( new_atom_vector, FRAGMENT, m_DrugLikenessType), *this);
-        }
+        return math::MutateResult< FragmentComplete>
+        (
+          cleaner.Clean
+          (
+            new_atom_vector,
+            m_ScaffoldFragment.GetSize() ? m_ScaffoldFragment : FRAGMENT,
+            m_DrugLikenessType,
+            m_SkipNeutralization,
+            m_SkipSaturateH,
+            m_SkipSplit
+          ),
+          *this
+        );
       }
-
       // if no luck, return null ptr
       return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
     }

@@ -481,7 +481,7 @@ namespace bcl
       // POSE-DEPENDENT CONSTRUCTION OF MUTATES //
       if( !MDL.empty())
       {
-        mutater->AddMutate( FragmentMutateRingSwap( tree_search, m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, MDL, PROPERTY_SCORER, RESOLVE_CLASHES, storage::Vector< float>(), CORINA_CONFS, true, false, 0.1, true, true), RING_SWAP_PROB);
+        mutater->AddMutate( FragmentMutateRingSwap( tree_search, m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, MDL, PROPERTY_SCORER, RESOLVE_CLASHES, storage::Vector< float>(), CORINA_CONFS, false, 0.1, true, true), RING_SWAP_PROB);
         mutater->AddMutate( FragmentMutateCyclize( m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, MDL, PROPERTY_SCORER, RESOLVE_CLASHES, storage::Vector< float>(), CORINA_CONFS), CYCLIZE_PROB);
         mutater->AddMutate( FragmentMutateAlchemy( m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, MDL, PROPERTY_SCORER, RESOLVE_CLASHES, storage::Vector< float>(), CORINA_CONFS), ALCHEMY_PROB);
         mutater->AddMutate( FragmentMutateRemoveAtom( m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, MDL, PROPERTY_SCORER, RESOLVE_CLASHES, storage::Vector< float>(), CORINA_CONFS), REMOVE_ATOM_PROB);
@@ -494,7 +494,7 @@ namespace bcl
       // POSE-INDEPENDENT CONSTRUCTION OF MUTATES //
       else
       {
-        mutater->AddMutate( FragmentMutateRingSwap( tree_search, m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, CORINA_CONFS, true, false, 0.1, true, true), RING_SWAP_PROB);
+        mutater->AddMutate( FragmentMutateRingSwap( tree_search, m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, CORINA_CONFS, false, 0.1, true, true), RING_SWAP_PROB);
         mutater->AddMutate( FragmentMutateCyclize( m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, CORINA_CONFS), CYCLIZE_PROB);
         mutater->AddMutate( FragmentMutateAlchemy(  m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, CORINA_CONFS), ALCHEMY_PROB);
         mutater->AddMutate( FragmentMutateRemoveAtom( m_DrugLikenessType, START_FRAGMENT, MUTABLE_FRAGMENTS, MUTABLE_ATOM_INDICES, CORINA_CONFS), REMOVE_ATOM_PROB);

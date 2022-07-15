@@ -61,12 +61,9 @@ namespace bcl
     FragmentMutateRingSwap::FragmentMutateRingSwap() :
       m_RotamerLibrarySearcher( util::ShPtr< SearchFragmentLibraryFromTree>()),
       m_RingInitiationProbability( 0.1),
-      m_FixGeometry( true),
       m_RestrictToNoMoreThanOneRingSizeChange( true),
       m_AllowLargeRingCollapse( true),
       m_AlignRings( false),
-      m_ExtendAdjacentAtoms( size_t( 1)),
-      m_ChooseBestAlignedConf( false),
       m_BondComparisonType( ConfigurationalBondTypeData::e_BondOrderOrAromaticWithRingness),
       m_AtomComparisonType( ConformationGraphConverter::e_ElementType)
     {
@@ -86,7 +83,6 @@ namespace bcl
       const bool &RESOLVE_CLASHES,
       const storage::Vector< float> &BFACTORS,
       const bool &CORINA,
-      const bool &FIX_GEOMETRY,
       const bool &NEUTRALIZE,
       const double &RING_INITIATION_PROBABILITY,
       const bool &PREVENT_MORE_THAN_ONE_RING_FROM_CHANGING_SIZE,
@@ -94,12 +90,9 @@ namespace bcl
     ) :
       m_RotamerLibrarySearcher( FRAGMENT_LIBRARY),
       m_RingInitiationProbability( RING_INITIATION_PROBABILITY),
-      m_FixGeometry( FIX_GEOMETRY),
       m_RestrictToNoMoreThanOneRingSizeChange( PREVENT_MORE_THAN_ONE_RING_FROM_CHANGING_SIZE),
       m_AllowLargeRingCollapse( ALLOW_LARGE_RING_COLLAPSE),
       m_AlignRings( false),
-      m_ExtendAdjacentAtoms( size_t( 1)),
-      m_ChooseBestAlignedConf( false),
       m_BondComparisonType( ConfigurationalBondTypeData::e_BondOrderOrAromaticWithRingness),
       m_AtomComparisonType( ConformationGraphConverter::e_ElementType)
     {
@@ -125,7 +118,6 @@ namespace bcl
       const FragmentEnsemble &MUTABLE_FRAGMENTS,
       const storage::Vector< size_t> &MUTABLE_ATOM_INDICES,
       const bool &CORINA,
-      const bool &FIX_GEOMETRY,
       const bool &NEUTRALIZE,
       const double &RING_INITIATION_PROBABILITY,
       const bool &PREVENT_MORE_THAN_ONE_RING_FROM_CHANGING_SIZE,
@@ -133,12 +125,9 @@ namespace bcl
     ) :
       m_RotamerLibrarySearcher( FRAGMENT_LIBRARY),
       m_RingInitiationProbability( RING_INITIATION_PROBABILITY),
-      m_FixGeometry( FIX_GEOMETRY),
       m_RestrictToNoMoreThanOneRingSizeChange( PREVENT_MORE_THAN_ONE_RING_FROM_CHANGING_SIZE),
       m_AllowLargeRingCollapse( ALLOW_LARGE_RING_COLLAPSE),
       m_AlignRings( false),
-      m_ExtendAdjacentAtoms( size_t( 1)),
-      m_ChooseBestAlignedConf( false),
       m_BondComparisonType( ConfigurationalBondTypeData::e_BondOrderOrAromaticWithRingness),
       m_AtomComparisonType( ConformationGraphConverter::e_ElementType)
     {
@@ -699,17 +688,27 @@ namespace bcl
         storage::Vector< size_t>(),
         m_ChooseBestAlignedConf,
         m_FixGeometry,
-        m_ExtendAdjacentAtoms
+        m_ExtendAdjacentAtoms,
+        m_ExtendRingAtoms
       );
 
       // clean the molecule
-      util::ShPtr< FragmentComplete> frag( util::ShPtr< FragmentComplete>( new FragmentComplete( atoms, "")));
       HydrogensHandler::Remove( atoms);
-      m_ScaffoldFragment.GetSize()
-          ? frag = cleaner.Clean( atoms, m_ScaffoldFragment, m_DrugLikenessType)
-          : frag = cleaner.Clean( atoms, FRAGMENT, m_DrugLikenessType);
+      return math::MutateResult< FragmentComplete>
+      (
+        cleaner.Clean
+        (
+          atoms,
+          m_ScaffoldFragment.GetSize() ? m_ScaffoldFragment : FRAGMENT,
+          m_DrugLikenessType,
+          m_SkipNeutralization,
+          m_SkipSaturateH,
+          m_SkipSplit
+        ),
+        *this
+      );
       // return the new constitution
-      return math::MutateResult< FragmentComplete>( frag, *this);
+      return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);
     }
 
   ////////////////
@@ -1082,28 +1081,6 @@ namespace bcl
 
       parameters.AddInitializer
       (
-        "fix_geometry",
-        "If True, then any atom/bonds with bad geometry is included for conformational sampling. If False, "
-        "then atoms with bad geometry will not be included unless they are also one of the perturbed atoms or "
-        "included as adjacent to the perturbed atoms.",
-        io::Serialization::GetAgent( &m_FixGeometry),
-        "true"
-      );
-
-      parameters.AddInitializer
-      (
-        "refine_alignment",
-        "If True, then choose the returned conformer based on a flexible substructure-based alignment scored with ChargeRMSD. "
-        "This method generates a conformational ensemble, performs a greedy disconnected substructure alignment of each conformer, "
-        "and then chooses the best one by ChargeRMSD score. If False, select the best conformer based on BCL::Conf score. "
-        "This option will reduce the speed of the mutate and is mostly recommended for pose-dependent replacement of ring "
-        "structures at the core of the molecule.",
-        io::Serialization::GetAgent( &m_ChooseBestAlignedConf),
-        "false"
-      );
-
-      parameters.AddInitializer
-      (
         "ring_initiation_probability",
         "Probability of initiating / removing a ring vs just swapping rings by default. So at 0.1, new rings will be "
         "created from individual atoms or removed 10% of the time, and just swapped 90% of the time",
@@ -1132,14 +1109,6 @@ namespace bcl
         "path to the ring library file",
         io::Serialization::GetAgent( &m_RingLibraryFilename),
         RotamerLibraryFile::GetRotamerFinder().FindFile( "") + "ring_libraries/drug_ring_database.simple.sdf.gz"
-      );
-
-      parameters.AddInitializer
-      (
-        "extend_adjacent_atoms",
-        "include adjacent atoms out this many bonds from any perturbed atom when generating a new 3D conformer",
-        io::Serialization::GetAgent( &m_ExtendAdjacentAtoms),
-        "1"
       );
 
       return parameters;

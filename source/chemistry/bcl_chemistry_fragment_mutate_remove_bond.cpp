@@ -357,19 +357,29 @@ namespace bcl
           m_PropertyScorer,
           m_ResolveClashes,
           m_BFactors,
-          m_Corina
+          m_Corina,
+          storage::Vector< size_t>(),
+          m_ChooseBestAlignedConf,
+          m_FixGeometry,
+          m_ExtendAdjacentAtoms,
+          m_ExtendRingAtoms
         );
 
         // Remove hydrogen atoms to allow bond type adjustment
         HydrogensHandler::Remove( atom_vector);
-        if( m_ScaffoldFragment.GetSize())
-        {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit), *this);
-        }
-        else
-        {
-          return math::MutateResult< FragmentComplete>( cleaner.Clean( atom_vector, FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit), *this);
-        }
+        return math::MutateResult< FragmentComplete>
+        (
+          cleaner.Clean
+          (
+            atom_vector,
+            m_ScaffoldFragment.GetSize() ? m_ScaffoldFragment : FRAGMENT,
+            m_DrugLikenessType,
+            m_SkipNeutralization,
+            m_SkipSaturateH,
+            m_SkipSplit
+          ),
+          *this
+        );
       }
       // failed all tries; return null
       return math::MutateResult< FragmentComplete>( util::ShPtr< FragmentComplete>(), *this);

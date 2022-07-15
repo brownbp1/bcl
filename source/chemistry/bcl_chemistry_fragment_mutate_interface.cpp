@@ -1031,6 +1031,47 @@ namespace bcl
         "BondOrderAmideOrAromaticWithRingness"
       );
 
+
+      parameters.AddInitializer
+      (
+        "fix_geometry",
+        "If True, then any atom/bonds with bad geometry is included for conformational sampling. If False, "
+        "then atoms with bad geometry will not be included unless they are also one of the perturbed atoms or "
+        "included as adjacent to the perturbed atoms.",
+        io::Serialization::GetAgent( &m_FixGeometry),
+        "true"
+      );
+
+      parameters.AddInitializer
+      (
+        "refine_alignment",
+        "If True, then choose the returned conformer based on a flexible substructure-based alignment scored with ChargeRMSD. "
+        "This method generates a conformational ensemble, performs a greedy disconnected substructure alignment of each conformer, "
+        "and then chooses the best one by ChargeRMSD score. If False, select the best conformer based on BCL::Conf score. "
+        "This option will reduce the speed of the mutate and is mostly recommended for pose-dependent replacement of ring "
+        "structures at the core of the molecule via RingSwap.",
+        io::Serialization::GetAgent( &m_ChooseBestAlignedConf),
+        "false"
+      );
+
+      parameters.AddInitializer
+      (
+        "extend_adjacent_atoms",
+        "include adjacent atoms out this many bonds from any perturbed atom when generating a new 3D conformer",
+        io::Serialization::GetAgent( &m_ExtendAdjacentAtoms),
+        "1"
+      );
+
+      parameters.AddInitializer
+      (
+        "extend_ring_atoms",
+        "add atoms in a shared ring with the perturbed atom(s) to the list of moveable atoms during 3D conformer "
+        "generation; generally recommended for aromatic systems, but may or may not be needed for "
+        "nonconjugated ring systems",
+        io::Serialization::GetAgent( &m_ExtendRingAtoms),
+        "true"
+      );
+
       return parameters;
     }
 

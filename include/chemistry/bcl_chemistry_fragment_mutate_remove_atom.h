@@ -68,6 +68,13 @@ namespace bcl
     // data //
     //////////
 
+
+      //! only mutate hydrogen atoms; if heavy atoms are made mutable, only consider their hydrogen(s);
+      bool m_RestrictToBondedH;
+
+      //! only mutate heavy atoms; if hydrogen atoms are made mutable, only consider their bonded partner
+      bool m_RestrictToBondedHeavy;
+
     public:
 
     //////////

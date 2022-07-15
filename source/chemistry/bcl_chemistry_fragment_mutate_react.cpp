@@ -192,8 +192,8 @@ namespace bcl
           util::ShPtr< FragmentComplete> new_mol_ptr
           (
             m_ScaffoldFragment.GetSize() ?
-                cleaner.Clean( unclean_mol.GetAtomVector(), m_ScaffoldFragment, m_DrugLikenessType) :
-                cleaner.Clean( unclean_mol.GetAtomVector(), FRAGMENT, m_DrugLikenessType)
+                cleaner.Clean( unclean_mol.GetAtomVector(), m_ScaffoldFragment, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit) :
+                cleaner.Clean( unclean_mol.GetAtomVector(), FRAGMENT, m_DrugLikenessType, m_SkipNeutralization, m_SkipSaturateH, m_SkipSplit)
           );
           return math::MutateResult< FragmentComplete>( new_mol_ptr, *this);
         }
