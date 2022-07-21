@@ -377,14 +377,19 @@ namespace bcl
             BCL_MessageDbg( "n_nonh_bonds: " + util::Format()( n_current_bonds));
             BCL_MessageDbg( "n_e_bonds: " + util::Format()( picked_atom->GetAtomType()->GetNumberElectronsInBonds()));
             BCL_MessageDbg( "n_nonh_e: " + util::Format()( n_nonh_e));
+            BCL_MessageDbg( "aromatic: " + util::Format()( picked_atom_aromatic));
             PossibleAtomTypesForAtom available_atom_types
             (
               GetChosenElementType(),
               n_nonh_e,
               n_current_bonds,
               util::IsDefined( m_FormalCharge) ? m_FormalCharge : picked_atom->GetCharge(),
-              picked_atom_aromatic
+              m_ChosenElementType == GetElementTypes().e_Sulfur ? false : picked_atom_aromatic
+                  // TODO this is a hack because we are failing to identify when a Sulfur atom is a valid aromatic replacement;
+                  // importantly, aromaticity is detected correctly during conformer generation, which means this is potentially
+                  // an issue with PossibleAtomTypesForAtom
             );
+            BCL_MessageDbg( "n_poss_types: " + util::Format()( available_atom_types.GetNumberPossibleTypes()));
             // find something with the requested formal charge
             if( available_atom_types.GetNumberPossibleTypes() && util::IsDefined( m_FormalCharge))
             {

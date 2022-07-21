@@ -226,7 +226,7 @@ namespace bcl
             itr_ring_select = m_FragmentPool( n_double_bonds).Begin();
             while( itr_ring_select != itr_ring_select_end)
             {
-              frag_value -= GetCounts( *itr_ring_select);
+              frag_value -= m_SetCountsToOne ? size_t( 1) : GetCounts( *itr_ring_select);
               if( frag_value < 0)
               {
                 break;
@@ -438,7 +438,7 @@ namespace bcl
           itr_ring_select = m_FragmentPool( n_double_bonds).Begin();
           while( itr_ring_select != itr_ring_select_end)
           {
-            frag_value -= GetCounts( *itr_ring_select);
+            frag_value -= m_SetCountsToOne ? size_t( 1) : GetCounts( *itr_ring_select);
             if( frag_value < 0)
             {
               break;
@@ -1111,6 +1111,19 @@ namespace bcl
         RotamerLibraryFile::GetRotamerFinder().FindFile( "") + "ring_libraries/drug_ring_database.simple.sdf.gz"
       );
 
+      parameters.AddInitializer
+      (
+        "set_ring_fragment_counts_to_one",
+        "the probability of a ring fragment to be selected is equal to its 'ScaffoldCount' value divided by "
+        "the sum of 'ScaffoldCount' values across all molecules in the input ring library. "
+        "if true, ignore stored counts in 'ScaffoldCount' and set to the count for each fragment to 1; "
+        "this has the effect of making each individual entry in the fragment pool equally likely to be selected; "
+        "note that this also has the effect of allowing users to control fragment selection probability through "
+        "multiple entries rather than the 'ScaffoldCount' MDL property",
+        io::Serialization::GetAgent( &m_SetCountsToOne),
+        "false"
+      );
+
       return parameters;
     }
 
@@ -1155,7 +1168,7 @@ namespace bcl
           m_FragmentPoolScaffoldSums.Resize( n_dbv + size_t( 1), size_t( 0));
         }
         m_FragmentPool( n_dbv).PushBack( *itr_ensemble);
-        m_FragmentPoolScaffoldSums( n_dbv) += GetCounts( *itr_ensemble);
+        m_FragmentPoolScaffoldSums( n_dbv) += m_SetCountsToOne ? size_t( 1) : GetCounts( *itr_ensemble);
       }
 
       // we require a ring library for this mutate to function

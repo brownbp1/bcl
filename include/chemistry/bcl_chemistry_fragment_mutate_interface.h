@@ -444,31 +444,29 @@ namespace bcl
     // helper functions //
     //////////////////////
 
-      // TODO make static
       //! @brief remove a hydrogen atom from a target atom
       //! @param FRAGMENT the molecule of interest
       //! @param ATOM_INDEX the index of the atom in the molecule of interest
       //! @param SHUFFLE_H if true, randomly select a hydrogen atom to remove
       //! @param REVERSE_H if true and not SHUFFLE_H, begin removal with the highest index hydrogen atom
       //! @return the new molecule, the index of the desired atom, and the original index of the removed hydrogen atom
-      storage::Triplet< FragmentComplete, size_t, size_t> OpenValence
+      static storage::Triplet< FragmentComplete, size_t, size_t> OpenValence
       (
         const FragmentComplete &FRAGMENT,
         const size_t &ATOM_INDEX,
         const bool SHUFFLE_H = true,
         const bool REVERSE_H = false
-      ) const;
+      );
 
-      // TODO make static
       //! @brief checks whether substitution at this atom is ortho, meta, or para directed
       //! @param MOLECULE the small molecule of interest
       //! @param ATOM simple pointer to the atom of interest in the molecule
       //! @return return true if the substitution is directed correctly
-      bool IsRingSubstitutionDirected
+      static bool IsRingSubstitutionDirected
       (
         const FragmentComplete &MOLECULE,
         util::SiPtr< const AtomConformationalInterface> &ATOM
-      ) const;
+      );
 
       //! @brief select an atom from the target fragment
       //! @brief MOLECULE molecule from which to choose atom

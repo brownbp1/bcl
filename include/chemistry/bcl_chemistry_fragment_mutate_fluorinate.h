@@ -198,7 +198,7 @@ namespace bcl
     ////////////////
 
       //! @brief set reversibility
-      void SetReverisibility( const bool REVERSIBLE);
+      void SetReversibility( const bool REVERSIBLE);
 
     protected:
 

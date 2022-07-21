@@ -397,7 +397,7 @@ namespace bcl
   ////////////////
 
     //! @brief set reversibility
-    void FragmentMutateFluorinate::SetReverisibility( const bool REVERSIBLE)
+    void FragmentMutateFluorinate::SetReversibility( const bool REVERSIBLE)
     {
       m_Reversible = REVERSIBLE;
     }

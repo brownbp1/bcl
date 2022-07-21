@@ -49,9 +49,7 @@ namespace bcl
     //! @brief default constructor
     FragmentMutateReact::FragmentMutateReact() :
         m_LigandBased( false),
-        m_CorrectGeometry( false),
-        m_CorrectNonReferenceRingGeometry( false),
-        m_AdditionalAdjacentAtoms( size_t( 0))
+        m_CorrectNonReferenceRingGeometry( false)
     {
       // important to get options from base class and initialize reaction search
       this->ReadInitializerSuccessHook( util::ObjectDataLabel(), util::GetLogger());
@@ -64,9 +62,7 @@ namespace bcl
     ) :
       FragmentReact( REACT),
       m_LigandBased( false),
-      m_CorrectGeometry( false),
-      m_CorrectNonReferenceRingGeometry( false),
-      m_AdditionalAdjacentAtoms( size_t( 0))
+      m_CorrectNonReferenceRingGeometry( false)
     {
       // important to get options from base class and initialize reaction search
       this->ReadInitializerSuccessHook( util::ObjectDataLabel(), util::GetLogger());
@@ -145,9 +141,9 @@ namespace bcl
       {
         BCL_MessageStd( "Setting pose-dependent options");
         BCL_MessageStd( "Ligand-based: " + util::Format()( m_LigandBased ? "true" : "false"));
-        BCL_MessageStd( "Fix bad geometry: " + util::Format()( m_CorrectGeometry ? "true" : "false"));
-        BCL_MessageStd("Fix bad ring geometry: " + util::Format()( m_CorrectNonReferenceRingGeometry ? "true" : "false"));
-        BCL_MessageStd("Extend adjacent atoms: " + util::Format()( m_AdditionalAdjacentAtoms));
+        BCL_MessageStd( "Fix bad geometry: " + util::Format()( m_FixGeometry ? "true" : "false"));
+        BCL_MessageStd( "Fix bad ring geometry: " + util::Format()( m_CorrectNonReferenceRingGeometry ? "true" : "false"));
+        BCL_MessageStd( "Extend adjacent atoms: " + util::Format()( m_ExtendAdjacentAtoms));
       }
 
       // try a few times
@@ -173,8 +169,8 @@ namespace bcl
           m_Corina,
           storage::Vector< size_t>(),
           false,
-          m_CorrectGeometry,
-          m_AdditionalAdjacentAtoms
+          m_FixGeometry,
+          m_ExtendAdjacentAtoms
         );
 
         // remove hydrogen atoms so ease burden on the isomorphism search during cleaning
@@ -273,29 +269,11 @@ namespace bcl
 
        parameters.AddInitializer
        (
-         "fix_geometry",
-         "pose-dependent; "
-         "if 3D conformer matters, fix atoms with bad geometry even if they are in reference structure",
-         io::Serialization::GetAgent( &m_CorrectGeometry),
-         "false"
-       );
-
-       parameters.AddInitializer
-       (
          "fix_ring_geometry",
          "pose-dependent; "
          "if 3D conformer matters, add all ring atoms from non-reference scaffolds to mobile selection",
          io::Serialization::GetAgent( &m_CorrectNonReferenceRingGeometry),
          "false"
-       );
-
-       parameters.AddInitializer
-       (
-         "extend_adjacent_atoms",
-         "pose-dependent; "
-         "include adjacent atoms out this many bonds from any perturbed atom when generating a new 3D conformer",
-         io::Serialization::GetAgent( &m_AdditionalAdjacentAtoms),
-         "0"
        );
 
        return parameters;
@@ -368,9 +346,9 @@ namespace bcl
        if( !m_LigandBased)
        {
          // set pose-dependent options
-         m_ReactionWorker.SetCorrectGeometry( m_CorrectGeometry);
+         m_ReactionWorker.SetCorrectGeometry( m_FixGeometry);
          m_ReactionWorker.SetCorrectNonReferenceRingGeometry( m_CorrectNonReferenceRingGeometry);
-         m_ReactionWorker.SetAdditionalAdjacentAtoms( m_AdditionalAdjacentAtoms);
+         m_ReactionWorker.SetAdditionalAdjacentAtoms( m_ExtendAdjacentAtoms);
        }
 
        // done

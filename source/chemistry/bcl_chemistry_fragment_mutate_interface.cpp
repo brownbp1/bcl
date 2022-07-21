@@ -410,7 +410,7 @@ namespace bcl
       const size_t &ATOM_INDEX,
       const bool SHUFFLE_H,
       const bool REVERSE_H
-    ) const
+    )
     {
       // find a hydrogen atom attached to specified atom index
       storage::Vector< size_t> h_indices;
@@ -511,7 +511,7 @@ namespace bcl
     (
       const FragmentComplete &MOLECULE,
       util::SiPtr< const AtomConformationalInterface> &ATOM
-    ) const
+    )
     {
       // compute our chosen atom pi charge
       double atom_pi_charge

@@ -80,14 +80,8 @@ namespace bcl
       //! overrides 3D conformer settings to just produce an arbitrary conformer without preserving spatial information
       bool m_LigandBased;
 
-      //! pose-dependent; if 3D conformer matters, fix atoms with bad geometry even if they are in reference structure
-      bool m_CorrectGeometry;
-
       //! pose-dependent; if 3D conformer matters, add all ring atoms from non-reference scaffolds to mobile selection
       bool m_CorrectNonReferenceRingGeometry;
-
-      //! pose-dependent; if 3D conformer matters, fix atoms this many bonds out from any other mobile atom
-      size_t m_AdditionalAdjacentAtoms;
 
     public:
 

@@ -95,6 +95,12 @@ namespace bcl
       //! if true, align new ring to current ring prior to substitution to preserve topological distances between substituents as best as possible
       bool m_AlignRings;
 
+      //! if true, ignore stored counts and set to the count for each fragment to 1;
+      //! this has the effect of making each individual entry in the fragment pool equally likely to be selected;
+      //! note that this also has the effect of allowing users to control fragment selection probability through
+      //! multiple entries rather than the 'ScaffoldCount' MDL property
+      bool m_SetCountsToOne;
+
       //! Scheme used for comparing whether two bonds are equivalent
       ConfigurationalBondTypeData::DataEnum m_BondComparisonType;
 
