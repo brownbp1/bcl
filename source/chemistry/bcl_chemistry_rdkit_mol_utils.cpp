@@ -227,16 +227,33 @@ namespace bcl
                 bcl_bond_type = GetConfigurationalBondTypes().e_ConjugatedBond;
           }
         }
-        // non-aromatic, non-conjugated bonds
+        // safety net
         else if( bond_type == double( 1.0))
         {
           ring_bond ?
-              bcl_bond_type = GetConfigurationalBondTypes().e_NonConjugatedSingleBond :
-              bcl_bond_type = GetConfigurationalBondTypes().e_NonConjugatedSingleBondInRing;
+              bcl_bond_type = GetConfigurationalBondTypes().e_NonConjugatedSingleBondInRing :
+              bcl_bond_type = GetConfigurationalBondTypes().e_NonConjugatedSingleBond;
+        }
+        else if( bond_type == double( 2.0))
+        {
+          ring_bond ?
+              bcl_bond_type = GetConfigurationalBondTypes().e_ConjugatedDoubleBondInRing :
+              bcl_bond_type = GetConfigurationalBondTypes().e_ConjugatedDoubleBond;
+        }
+        else if( bond_type == double( 3.0))
+        {
+          ring_bond ?
+              bcl_bond_type = GetConfigurationalBondTypes().e_ConjugatedTripleBondInRing :
+              bcl_bond_type = GetConfigurationalBondTypes().e_ConjugatedTripleBond;
+        }
+        else if( bond_type == double( 1.5)) // common aromatic as double in RDKit
+        {
+          bcl_bond_type = GetConfigurationalBondTypes().e_AromaticBond;
         }
         // undefined bond types otherwise
         else
         {
+          // TODO add an informative BCL_MessageVrb here
           bcl_bond_type = GetConfigurationalBondTypes().e_Undefined;
         }
 
@@ -413,6 +430,7 @@ namespace bcl
         // give unspecified bonds to undefined and other bond types
         else
         {
+          // TODO add an informative BCL_MessageVrb here
           rdkit_bond_p->setBondType( ::RDKit::Bond::BondType::UNSPECIFIED);
         }
 
