@@ -249,7 +249,7 @@ namespace bcl
       (
         new command::FlagStatic
         (
-          "restaint_force",
+          "restraint_force",
           "scalar value specifying the restraint force in kcal/(mol·A) for each atom during minimization; "
           "functions as the default value if 'restraint_force_mdl' is not provided or is invalid",
           command::Parameter
